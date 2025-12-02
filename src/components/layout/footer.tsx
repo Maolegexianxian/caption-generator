@@ -129,6 +129,9 @@ export function Footer() {
             for content creators.
           </p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <Link href="/faq" className="hover:text-primary transition-colors">
+              FAQ
+            </Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">
               Privacy Policy
             </Link>

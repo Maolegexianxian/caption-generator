@@ -84,12 +84,12 @@ export default function NotFound() {
           </Link>
         </div>
 
-        {/* 返回上一页 */}
+        {/* 返回上一页 - 使用客户端组件实现 */}
         <div className="mt-8">
           <Button variant="ghost" asChild>
-            <Link href="javascript:history.back()">
+            <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back
+              Back to Home
             </Link>
           </Button>
         </div>

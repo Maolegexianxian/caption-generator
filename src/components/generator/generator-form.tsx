@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { 
   Select,
   SelectContent,
@@ -344,28 +345,36 @@ export function GeneratorForm({
             </div>
 
             {/* 附加选项 */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-6">
               {/* Hashtag 开关 */}
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
+              <div className="flex items-center space-x-3">
+                <Switch
+                  id="include-hashtags"
                   checked={includeHashtags}
-                  onChange={(e) => setIncludeHashtags(e.target.checked)}
-                  className="rounded border-gray-300"
+                  onCheckedChange={setIncludeHashtags}
                 />
-                <span className="text-sm">Include Hashtags</span>
-              </label>
+                <Label 
+                  htmlFor="include-hashtags" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Include Hashtags
+                </Label>
+              </div>
 
               {/* Emoji 开关 */}
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
+              <div className="flex items-center space-x-3">
+                <Switch
+                  id="include-emoji"
                   checked={includeEmoji}
-                  onChange={(e) => setIncludeEmoji(e.target.checked)}
-                  className="rounded border-gray-300"
+                  onCheckedChange={setIncludeEmoji}
                 />
-                <span className="text-sm">Include Emojis</span>
-              </label>
+                <Label 
+                  htmlFor="include-emoji" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Include Emojis
+                </Label>
+              </div>
             </div>
           </>
         )}
