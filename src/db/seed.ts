@@ -15,6 +15,7 @@ import {
   layoutPresets,
   seoPages,
   captions,
+  generationHistory,
 } from './schema';
 import {
   PLATFORMS_CONFIG,
@@ -32,11 +33,19 @@ import { generateUniqueId } from '@/lib/utils';
 async function clearAllTables(): Promise<void> {
   console.log('🗑️  清空现有数据...');
   
-  // 按照外键依赖顺序删除
+  // 按照外键依赖顺序删除（先删除依赖其他表的表）
+  // 0. 先删除 generationHistory（依赖 platforms, categories, moods）
+  await db.delete(generationHistory);
+  // 1. 删除 captions（依赖 platforms, categories, moods）
+  await db.delete(captions);
+  // 2. 删除 seoPages（依赖 platforms, categories）
   await db.delete(seoPages);
+  // 3. 删除关联表
   await db.delete(platformCategories);
   await db.delete(categoryHashtags);
+  // 4. 删除 layoutPresets（依赖 platforms）
   await db.delete(layoutPresets);
+  // 5. 删除基础表
   await db.delete(hashtags);
   await db.delete(moods);
   await db.delete(categories);
