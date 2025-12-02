@@ -6,12 +6,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, Sparkles, Hash } from 'lucide-react';
+import { Copy, Check, Sparkles, Hash, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { RewriteDialog } from '@/components/caption/rewrite-dialog';
 import { cn, copyToClipboard, formatHashtags } from '@/lib/utils';
 import { CaptionCardProps, PlatformId } from '@/types';
 
@@ -230,6 +231,18 @@ export function CaptionCard({
                 </Tooltip>
               </TooltipProvider>
             )}
+
+            {/* AI 改写按钮 */}
+            <RewriteDialog
+              originalContent={getContent()}
+              platformId={platform}
+              trigger={
+                <Button variant="ghost" size="sm" className="h-8">
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Rewrite
+                </Button>
+              }
+            />
 
             {/* 复制按钮 */}
             <Button

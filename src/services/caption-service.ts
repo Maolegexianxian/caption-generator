@@ -353,3 +353,86 @@ export async function batchCreateCaptions(captionsList: CreateCaptionParams[]): 
     throw new Error('Failed to batch create captions');
   }
 }
+
+/**
+ * 获取分类页面文案（用于 SEO 落地页）
+ * @param platformId - 平台 ID
+ * @param categoryId - 分类 ID
+ * @param limit - 数量限制
+ * @returns 文案列表及相关标签
+ */
+export async function getCategoryPageCaptions(
+  platformId: PlatformId,
+  categoryId: string,
+  limit = 12
+): Promise<{
+  captions: typeof captions.$inferSelect[];
+  hashtags: string[];
+}> {
+  try {
+    // 获取分类文案
+    const captionResults = await db
+      .select()
+      .from(captions)
+      .where(
+        and(
+          eq(captions.platformId, platformId),
+          eq(captions.categoryId, categoryId),
+          eq(captions.isActive, true)
+        )
+      )
+      .orderBy(desc(captions.isFeatured), desc(captions.copyCount))
+      .limit(limit);
+
+    // 获取分类相关 Hashtag
+    const hashtagResults = await db
+      .select({ tag: hashtags.tag })
+      .from(categoryHashtags)
+      .innerJoin(hashtags, eq(categoryHashtags.hashtagId, hashtags.id))
+      .where(eq(categoryHashtags.categoryId, categoryId))
+      .orderBy(desc(hashtags.usageCount))
+      .limit(10);
+
+    return {
+      captions: captionResults,
+      hashtags: hashtagResults.map(h => h.tag),
+    };
+  } catch (error) {
+    console.error('Error getting category page captions:', error);
+    return {
+      captions: [],
+      hashtags: [],
+    };
+  }
+}
+
+/**
+ * 获取精选文案（用于首页展示）
+ * @param platformId - 平台 ID（可选）
+ * @param limit - 数量限制
+ * @returns 精选文案列表
+ */
+export async function getFeaturedCaptions(
+  platformId?: PlatformId,
+  limit = 8
+): Promise<typeof captions.$inferSelect[]> {
+  try {
+    const conditions = [eq(captions.isFeatured, true), eq(captions.isActive, true)];
+    
+    if (platformId) {
+      conditions.push(eq(captions.platformId, platformId));
+    }
+
+    const results = await db
+      .select()
+      .from(captions)
+      .where(and(...conditions))
+      .orderBy(desc(captions.copyCount))
+      .limit(limit);
+
+    return results;
+  } catch (error) {
+    console.error('Error getting featured captions:', error);
+    return [];
+  }
+}

@@ -5,9 +5,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, RefreshCw } from 'lucide-react';
+import { Sparkles, ArrowRight, RefreshCw, Hash, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +22,7 @@ import {
   GenerateResponse, 
   GeneratedCaption 
 } from '@/types';
-import { MOODS_CONFIG } from '@/config/constants';
+import { MOODS_CONFIG, CATEGORIES_CONFIG } from '@/config/constants';
 
 /**
  * 简化版生成器组件属性
@@ -68,6 +68,30 @@ export function SimplifiedGenerator({
   const [results, setResults] = useState<GeneratedCaption[]>([]);
   /** 是否已生成 */
   const [hasGenerated, setHasGenerated] = useState(false);
+  /** 推荐 Hashtag */
+  const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
+
+  /** 获取分类配置 */
+  const categoryConfig = CATEGORIES_CONFIG.find(c => c.id === categoryId);
+
+  /** 推荐关键词（基于分类） */
+  const suggestedKeywords = categoryConfig 
+    ? [categoryConfig.displayName.toLowerCase(), categoryConfig.slug]
+    : [];
+
+  /** 获取推荐 Hashtag */
+  useEffect(() => {
+    if (categoryId) {
+      fetch(`/api/hashtags?categoryId=${categoryId}&limit=6`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.hashtags) {
+            setSuggestedHashtags(data.data.hashtags);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [categoryId]);
 
   /**
    * 切换情绪选择
@@ -174,7 +198,25 @@ export function SimplifiedGenerator({
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
             className="bg-background"
+            onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
           />
+          {/* 推荐关键词提示 */}
+          {suggestedKeywords.length > 0 && !keywords && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Lightbulb className="h-3 w-3" />
+              <span>Try:</span>
+              {suggestedKeywords.map((kw, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="hover:text-primary hover:underline"
+                  onClick={() => setKeywords(kw)}
+                >
+                  {kw}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 情绪选择（只显示前6个） */}
@@ -229,6 +271,21 @@ export function SimplifiedGenerator({
             </Link>
           </Button>
         </div>
+
+        {/* 推荐 Hashtag */}
+        {suggestedHashtags.length > 0 && !hasGenerated && (
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            <span className="text-muted-foreground flex items-center">
+              <Hash className="h-3 w-3 mr-1" />
+              Popular:
+            </span>
+            {suggestedHashtags.slice(0, 5).map((tag, i) => (
+              <Badge key={i} variant="outline" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* 生成结果 */}
         {hasGenerated && results.length > 0 && (

@@ -320,3 +320,205 @@ export function validateGenerateRequest(request: GenerateRequest): {
     errors,
   };
 }
+
+// =============== 文案改写服务 ===============
+
+/**
+ * 改写请求参数
+ */
+export interface RewriteRequest {
+  /** 原始文案内容 */
+  originalContent: string;
+  /** 目标平台 */
+  platformId: PlatformId;
+  /** 改写风格 */
+  style: 'casual' | 'professional' | 'humorous' | 'emotional' | 'concise';
+  /** 目标语言（可选，用于翻译） */
+  targetLanguage?: string;
+  /** 是否保留 Emoji */
+  keepEmoji?: boolean;
+}
+
+/**
+ * 改写响应
+ */
+export interface RewriteResponse {
+  /** 是否成功 */
+  success: boolean;
+  /** 改写后的内容列表 */
+  results: string[];
+  /** 错误信息 */
+  error?: string;
+}
+
+/**
+ * AI 文案改写服务
+ * @param request - 改写请求参数
+ * @returns 改写响应
+ */
+export async function rewriteCaption(request: RewriteRequest): Promise<RewriteResponse> {
+  const {
+    originalContent,
+    platformId,
+    style,
+    targetLanguage,
+    keepEmoji = true,
+  } = request;
+
+  // 验证输入
+  if (!originalContent || originalContent.trim().length === 0) {
+    return {
+      success: false,
+      results: [],
+      error: 'Original content is required',
+    };
+  }
+
+  if (originalContent.length > 1000) {
+    return {
+      success: false,
+      results: [],
+      error: 'Content too long, max 1000 characters',
+    };
+  }
+
+  try {
+    // 构建改写风格指令
+    const styleInstructions: Record<string, string> = {
+      casual: 'Make it more casual, friendly, and conversational',
+      professional: 'Make it more professional and polished',
+      humorous: 'Add humor and wit while keeping the message',
+      emotional: 'Make it more emotional and heartfelt',
+      concise: 'Make it shorter and more impactful',
+    };
+
+    // 平台特定指令
+    const platformConfig = PLATFORMS_CONFIG[platformId];
+    const maxChars = platformConfig?.maxCharacters || 280;
+
+    // 构建提示词
+    const systemPrompt = `You are an expert social media copywriter specializing in ${platformConfig?.displayName || 'social media'} content.
+Your task is to rewrite the given caption while:
+1. ${styleInstructions[style] || 'Keeping the original style'}
+2. Keeping it under ${maxChars} characters
+3. ${keepEmoji ? 'Keeping or adding appropriate emojis' : 'Removing emojis'}
+4. ${targetLanguage ? `Translating to ${targetLanguage}` : 'Keeping the original language'}
+5. Maintaining the core message and intent
+
+Return ONLY a JSON object with this structure:
+{
+  "rewrites": ["version1", "version2", "version3"]
+}
+
+Provide 3 different rewrite versions.`;
+
+    const userPrompt = `Rewrite this caption:\n\n"${originalContent}"`;
+
+    // 调用 OpenAI API
+    const { text } = await generateText({
+      model: openai('gpt-4o-mini'),
+      system: systemPrompt,
+      prompt: userPrompt,
+      temperature: 0.8,
+    });
+
+    // 解析响应
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Invalid response format');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const rewrites = parsed.rewrites || [];
+
+    if (!Array.isArray(rewrites) || rewrites.length === 0) {
+      throw new Error('No rewrites generated');
+    }
+
+    return {
+      success: true,
+      results: rewrites.slice(0, 3),
+    };
+  } catch (error) {
+    console.error('Rewrite error:', error);
+    return {
+      success: false,
+      results: [],
+      error: error instanceof Error ? error.message : 'Failed to rewrite caption',
+    };
+  }
+}
+
+/**
+ * 翻译请求参数
+ */
+export interface TranslateRequest {
+  /** 原始内容 */
+  content: string;
+  /** 源语言 */
+  sourceLanguage: string;
+  /** 目标语言 */
+  targetLanguage: string;
+  /** 是否保持语气 */
+  preserveTone?: boolean;
+}
+
+/**
+ * 翻译响应
+ */
+export interface TranslateResponse {
+  /** 是否成功 */
+  success: boolean;
+  /** 翻译结果 */
+  translatedContent?: string;
+  /** 错误信息 */
+  error?: string;
+}
+
+/**
+ * AI 文案翻译服务
+ * @param request - 翻译请求参数
+ * @returns 翻译响应
+ */
+export async function translateCaption(request: TranslateRequest): Promise<TranslateResponse> {
+  const {
+    content,
+    sourceLanguage,
+    targetLanguage,
+    preserveTone = true,
+  } = request;
+
+  // 验证输入
+  if (!content || content.trim().length === 0) {
+    return {
+      success: false,
+      error: 'Content is required',
+    };
+  }
+
+  try {
+    const systemPrompt = `You are a professional translator specializing in social media content.
+Translate the following content from ${sourceLanguage} to ${targetLanguage}.
+${preserveTone ? 'Preserve the original tone, style, and emotional impact.' : 'Use a neutral tone.'}
+Keep any emojis and hashtags.
+Return ONLY the translated text, nothing else.`;
+
+    const { text } = await generateText({
+      model: openai('gpt-4o-mini'),
+      system: systemPrompt,
+      prompt: content,
+      temperature: 0.3,
+    });
+
+    return {
+      success: true,
+      translatedContent: text.trim(),
+    };
+  } catch (error) {
+    console.error('Translation error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to translate caption',
+    };
+  }
+}
