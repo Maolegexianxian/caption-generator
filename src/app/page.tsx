@@ -13,6 +13,7 @@ import {
   Zap,
   Copy,
   Globe,
+  CheckCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,23 +37,31 @@ const platformIcons: Record<PlatformId, React.ComponentType<{ className?: string
 const features = [
   {
     icon: Sparkles,
-    title: 'AI-Powered',
-    description: 'Generate unique, engaging captions with advanced AI technology',
+    title: 'AI-Powered Magic',
+    description: 'Generate unique, engaging captions with advanced AI that understands context and nuance.',
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10'
   },
   {
     icon: Zap,
-    title: 'Instant Results',
-    description: 'Get multiple caption options in seconds, not minutes',
+    title: 'Lightning Fast',
+    description: 'Get multiple creative options in seconds. Say goodbye to writer\'s block forever.',
+    color: 'text-amber-500',
+    bg: 'bg-amber-500/10'
   },
   {
     icon: Copy,
-    title: 'One-Click Copy',
-    description: 'Copy perfectly formatted captions ready for posting',
+    title: 'One-Click Ready',
+    description: 'Perfectly formatted captions with line breaks and emojis, ready to copy and paste.',
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10'
   },
   {
     icon: Globe,
     title: 'Multi-Platform',
-    description: 'Optimized for Telegram, Instagram, and X (Twitter)',
+    description: 'Optimized formats for Telegram, Instagram, and X to maximize your engagement.',
+    color: 'text-green-500',
+    bg: 'bg-green-500/10'
   },
 ];
 
@@ -62,78 +71,77 @@ const features = [
  */
 export default function HomePage() {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen">
       {/* Hero 区域 */}
-      <section className="relative py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] opacity-30 dark:opacity-20 bg-gradient-to-b from-primary/20 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] opacity-20 dark:opacity-10 bg-purple-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] opacity-20 dark:opacity-10 bg-blue-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
+        </div>
+
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-4xl mx-auto text-center mb-12">
             {/* 标签 */}
-            <Badge variant="secondary" className="mb-4">
-              <Sparkles className="h-3 w-3 mr-1" />
+            <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Sparkles className="h-4 w-4 mr-2" />
               AI-Powered Caption Generator
-            </Badge>
+            </div>
             
             {/* 标题 */}
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
               Create Perfect{' '}
-              <span className="text-primary">Social Media Captions</span>{' '}
+              <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                Social Media Captions
+              </span>{' '}
               in Seconds
             </h1>
             
             {/* 描述 */}
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
               {SITE_CONFIG.description}
             </p>
             
-            {/* CTA 按钮 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/generator">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Start Generating
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/captions-for-instagram">
-                  Browse Captions
-                </Link>
-              </Button>
+            {/* Hero Generator 组件 */}
+            <div className="mt-8 w-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+              <HeroGenerator />
             </div>
           </div>
         </div>
       </section>
 
       {/* 平台选择区域 */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-24 bg-muted/30 relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Choose Your Platform</h2>
-            <p className="text-muted-foreground">
-              Get captions optimized for each social media platform
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Platform</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Get captions optimized specifically for each social media platform's algorithm and audience
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {Object.values(PlatformId).map((platformId) => {
               const config = PLATFORMS_CONFIG[platformId];
               const Icon = platformIcons[platformId];
               
               return (
-                <Link key={platformId} href={`/${config.slug}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-                    <CardHeader className="text-center">
-                      <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                        <Icon className="h-8 w-8 text-primary" />
+                <Link key={platformId} href={`/${config.slug}`} className="block h-full">
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card/50 backdrop-blur-sm group cursor-pointer overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <CardHeader className="text-center relative pb-2">
+                      <div className="mx-auto w-20 h-20 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300 shadow-sm">
+                        <Icon className="h-10 w-10 text-primary transition-transform duration-300" />
                       </div>
-                      <CardTitle className="text-xl">{config.displayName}</CardTitle>
-                      <CardDescription>{config.description}</CardDescription>
+                      <CardTitle className="text-2xl mb-2">{config.displayName}</CardTitle>
+                      <CardDescription className="text-base">{config.description}</CardDescription>
                     </CardHeader>
-                    <CardContent className="text-center">
-                      <Button variant="ghost" className="group-hover:text-primary">
-                        Explore Captions
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
+                    <CardContent className="text-center relative">
+                      <div className="pt-4 flex items-center justify-center text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        Generate Captions
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>
@@ -144,27 +152,27 @@ export default function HomePage() {
       </section>
 
       {/* 特性展示区域 */}
-      <section className="py-16">
+      <section className="py-24 relative overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose Us?</h2>
-            <p className="text-muted-foreground">
-              The fastest way to create engaging social media content
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Us?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              The smartest way to create engaging social media content that converts
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               
               return (
-                <Card key={index} className="text-center">
-                  <CardContent className="pt-6">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-primary" />
+                <Card key={index} className="border-none shadow-none bg-transparent text-center group hover:bg-muted/30 transition-colors duration-300 rounded-2xl">
+                  <CardContent className="pt-8 pb-8">
+                    <div className={`mx-auto w-16 h-16 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className={`h-8 w-8 ${feature.color}`} />
                     </div>
-                    <h3 className="font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -176,16 +184,16 @@ export default function HomePage() {
       </section>
 
       {/* 热门分类区域 */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Popular Categories</h2>
-            <p className="text-muted-foreground">
-              Find captions for any occasion
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Popular Categories</h2>
+            <p className="text-lg text-muted-foreground">
+              Find the perfect caption for any occasion
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
             {CATEGORIES_CONFIG.map((category) => (
               <Link
                 key={category.id}
@@ -193,9 +201,9 @@ export default function HomePage() {
               >
                 <Badge
                   variant="secondary"
-                  className="text-base py-2 px-4 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                  className="text-base py-3 px-6 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-200 rounded-full border border-transparent hover:border-primary/20 shadow-sm hover:shadow-md"
                 >
-                  <span className="mr-2">{category.icon}</span>
+                  <span className="mr-2 text-lg">{category.icon}</span>
                   {category.displayName}
                 </Badge>
               </Link>
@@ -205,22 +213,37 @@ export default function HomePage() {
       </section>
 
       {/* CTA 区域 */}
-      <section className="py-20 bg-primary text-primary-foreground">
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary -z-10">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+        </div>
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Create Amazing Captions?
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary-foreground">
+            Ready to Go Viral?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Start generating engaging content for your social media today
+          <p className="text-xl md:text-2xl mb-10 text-primary-foreground/90 max-w-2xl mx-auto">
+            Join thousands of creators using AI to level up their social media game.
           </p>
-          <Button size="lg" variant="secondary" asChild>
+          <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold shadow-xl hover:scale-105 transition-transform" asChild>
             <Link href="/generator">
               <Sparkles className="h-5 w-5 mr-2" />
-              Try the Generator Now
+              Start Generating for Free
             </Link>
           </Button>
+          
+          <div className="mt-10 flex items-center justify-center space-x-8 text-primary-foreground/80">
+            <div className="flex items-center">
+              <CheckCircle2 className="w-5 h-5 mr-2" />
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircle2 className="w-5 h-5 mr-2" />
+              <span>Free forever plan</span>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 }
+
