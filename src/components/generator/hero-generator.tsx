@@ -15,11 +15,12 @@ import {
   SelectItem, 
   Button, 
   Card as NextUICard, 
-  CardBody
+  CardBody,
+  Switch
 } from '@heroui/react';
-import { Sparkles, MessageCircle, Instagram, Twitter, ArrowRight, Wand2 } from 'lucide-react';
+import { Sparkles, MessageCircle, Instagram, Twitter, ArrowRight, Wand2, Globe } from 'lucide-react';
 import { PlatformId, GenerateResponse, GeneratedCaption, LengthType } from '@/types';
-import { PLATFORMS_CONFIG, MOODS_CONFIG } from '@/config/constants';
+import { PLATFORMS_CONFIG, MOODS_CONFIG, LANGUAGES_CONFIG } from '@/config/constants';
 import { CaptionCard } from '@/components/caption/caption-card';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -89,12 +90,18 @@ export function HeroGenerator() {
   const [topic, setTopic] = useState('');
   /** 情绪/风格 */
   const [mood, setMood] = useState<string>('');
+  /** 语言选择 */
+  const [language, setLanguage] = useState<string>('en');
+  /** 是否包含 Emoji */
+  const [includeEmoji, setIncludeEmoji] = useState(true);
   /** 是否正在生成 */
   const [isGenerating, setIsGenerating] = useState(false);
   /** 生成结果 */
   const [results, setResults] = useState<GeneratedCaption[]>([]);
   /** 是否已执行过生成（用于展示结果区域） */
   const [hasGenerated, setHasGenerated] = useState(false);
+  /** 是否展开高级选项 */
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // 获取当前平台主题
   const theme = getPlatformTheme(platform);
@@ -131,8 +138,8 @@ export function HeroGenerator() {
           lengthType: LengthType.MEDIUM,
           count: 3, // 首页快速生成，数量少一点以提高速度
           includeHashtags: true,
-          includeEmoji: true,
-          language: 'en', // 默认英语
+          includeEmoji,
+          language,
         }),
       });
 
@@ -247,7 +254,58 @@ export function HeroGenerator() {
             </div>
           </div>
 
-          {/* 3. 生成按钮 */}
+          {/* 3. 高级选项（可折叠） */}
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
+            >
+              <span className={cn("mr-2 transition-transform", showAdvanced && "rotate-90")}>▶</span>
+              Advanced Options
+            </button>
+            
+            {showAdvanced && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-default-50/50 rounded-lg border border-default-200">
+                {/* 语言选择 */}
+                <Select
+                  label="Language"
+                  selectedKeys={[language]}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  variant="bordered"
+                  labelPlacement="outside"
+                  radius="md"
+                  size="sm"
+                  classNames={{
+                    label: "text-sm font-medium text-foreground/80",
+                    trigger: "h-10 border-default-200",
+                  }}
+                  startContent={<Globe className="w-4 h-4 text-default-400" />}
+                >
+                  {LANGUAGES_CONFIG.map((lang) => (
+                    <SelectItem key={lang.code}>
+                      {lang.name}
+                    </SelectItem>
+                  ))}
+                </Select>
+
+                {/* Emoji 开关 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground/80">Include Emojis</span>
+                  <Switch
+                    isSelected={includeEmoji}
+                    onValueChange={setIncludeEmoji}
+                    size="sm"
+                    classNames={{
+                      wrapper: cn(includeEmoji && theme.primary)
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. 生成按钮 */}
           <div className="flex justify-end pt-2">
             <Button
               size="lg"

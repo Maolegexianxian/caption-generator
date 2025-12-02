@@ -65,6 +65,7 @@ export function GeneratorForm({
     moods,
     keywords,
     lengthType,
+    layoutPreset,
     language,
     includeHashtags,
     includeEmoji,
@@ -74,6 +75,7 @@ export function GeneratorForm({
     setMoods,
     setKeywords,
     setLengthType,
+    setLayoutPreset,
     setLanguage,
     setIncludeHashtags,
     setIncludeEmoji,
@@ -125,6 +127,7 @@ export function GeneratorForm({
           categoryId: category,
           keywords,
           lengthType,
+          layoutPresetId: layoutPreset,
           includeHashtags,
           includeEmoji,
           count: GENERATOR_CONFIG.defaultCount,
@@ -271,6 +274,35 @@ export function GeneratorForm({
         {/* 高级选项（非简化版本显示） */}
         {!simplified && (
           <>
+            {/* 排版预设选择 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Format Preset</Label>
+              <Select 
+                value={layoutPreset || ''} 
+                onValueChange={(value) => setLayoutPreset(value || null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Auto (Recommended)</SelectItem>
+                  {currentPlatformConfig.layoutPresets.map((preset) => (
+                    <SelectItem key={preset.id} value={preset.id}>
+                      <div className="flex flex-col">
+                        <span>{preset.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {preset.description}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose a format optimized for {currentPlatformConfig.displayName}
+              </p>
+            </div>
+
             {/* 语言和长度选择 */}
             <div className="grid grid-cols-2 gap-4">
               {/* 语言选择 */}

@@ -10,7 +10,8 @@ import { Sparkles, ArrowLeft, ChevronRight, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CaptionList } from '@/components/caption/caption-list';
+import { CaptionListClient } from '@/components/caption/caption-list-client';
+import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
 import { MOODS_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
@@ -387,6 +388,22 @@ export default async function XCategoryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* 内嵌简化版生成器 */}
+      <section className="py-8 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <SimplifiedGenerator
+              platform={PlatformId.X}
+              categoryId={category.id}
+              title={`Generate ${category.displayName} Captions`}
+              description={`Get AI-generated ${category.displayName.toLowerCase()} tweets (under 280 chars)`}
+              themeClass="bg-white dark:bg-zinc-900 border shadow-lg"
+              buttonClass="bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-black text-white"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* 文案列表 */}
       <section className="py-12">
         <div className="container mx-auto px-4">
@@ -395,10 +412,14 @@ export default async function XCategoryPage({ params }: PageProps) {
               Best X {category.displayName} Captions
             </h2>
             
-            <CaptionList
+            <CaptionListClient
               captions={captions}
               platform={PlatformId.X}
+              categoryId={category.id}
               showHashtags={false}
+              showSort={true}
+              showLoadMore={true}
+              pageSize={12}
             />
           </div>
         </div>

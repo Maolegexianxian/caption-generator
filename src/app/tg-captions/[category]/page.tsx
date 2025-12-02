@@ -10,7 +10,8 @@ import { Sparkles, ArrowLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CaptionList } from '@/components/caption/caption-list';
+import { CaptionListClient } from '@/components/caption/caption-list-client';
+import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
 import { MOODS_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
@@ -130,7 +131,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * @returns 示例文案列表
  */
 function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
-  /** 各分类对应的示例文案模板 */
+  /** 各分类对应的示例文案模板（每个分类约25条） */
   const captionTemplates: Record<string, string[]> = {
     channel: [
       '📢 Breaking news just dropped! Stay tuned for more updates 👆',
@@ -139,6 +140,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '🚀 Big announcement loading... You don\'t want to miss this!',
       '✨ Fresh updates delivered straight to your feed',
       '📌 Pin this one! Important information inside',
+      '🎯 Today\'s must-read content is here',
+      '⚡ Breaking: Something incredible just happened',
+      '🌟 Premium content unlocked for you',
+      '📊 Weekly roundup: Everything you missed',
+      '🔔 Notification squad! New post alert',
+      '💫 Your daily dose of inspiration awaits',
+      '📱 Swipe up for the full story',
+      '🎬 Behind the scenes content you\'ve been waiting for',
+      '🏆 Top picks of the week - Don\'t scroll past!',
+      '📝 Important update: Read before it\'s gone',
+      '🎁 Special surprise for our loyal subscribers',
+      '🌈 Something beautiful is coming your way',
+      '⭐ Featured content from your favorite channel',
+      '📖 Thread incoming - Save this one!',
+      '🔥 This post is on fire! Check it out',
+      '💡 Insider tip that you need to know',
+      '🎉 Celebrating another milestone with you all',
+      '📺 New video just dropped - Link in bio',
+      '🚨 Alert: Time-sensitive information below',
     ],
     group: [
       '👋 Welcome to the community! Introduce yourself below',
@@ -147,6 +167,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '📋 Quick poll: What content do you want to see more of?',
       '🤝 Community guidelines reminder - Let\'s keep it friendly!',
       '💡 Pro tip from the community shared below',
+      '🔥 Hot topic alert! Let\'s hear your opinions',
+      '🎯 Weekly challenge: Who\'s in?',
+      '📢 Attention all members: Important announcement',
+      '🌟 Shoutout to our most active members this week!',
+      '❓ Q&A time! Ask anything you want to know',
+      '🎮 Game night this weekend - Who\'s joining?',
+      '📚 Resource sharing thread - Drop your favorites!',
+      '🤔 What do you think about this? Comment below',
+      '👀 Sneak peek at what\'s coming next',
+      '🏅 Member of the week announcement',
+      '📝 Feedback time: Help us improve',
+      '🎊 New members welcome! Say hi 👋',
+      '💪 Motivation Monday: Share your goals',
+      '🔗 Link sharing allowed in this thread',
+      '🗳️ Vote now! Your opinion matters',
+      '📆 Weekly schedule posted - Check it out',
+      '🤗 Appreciation post for this amazing community',
+      '🆘 Need help? Post your questions here',
+      '🎁 Giveaway time! Details in the pinned message',
     ],
     bot: [
       '🤖 Your intelligent assistant is ready to help',
@@ -155,6 +194,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '📊 Get instant analytics and insights on demand',
       '🎯 Precision tools for power users',
       '💫 Making your Telegram experience magical',
+      '🚀 Supercharge your productivity with AI',
+      '🔐 Secure, private, and efficient',
+      '📱 Access powerful features with simple commands',
+      '💡 Smart solutions for everyday tasks',
+      '⏰ Never miss important updates with reminders',
+      '🌐 Connect and automate across platforms',
+      '📈 Track your progress automatically',
+      '🎮 Fun features to enhance your experience',
+      '🛡️ Built with security in mind',
+      '💬 Natural conversations with AI assistance',
+      '📝 Organize your life with smart notes',
+      '🔔 Custom notifications tailored to you',
+      '🎨 Create beautiful content effortlessly',
+      '📊 Data-driven insights at your fingertips',
+      '🤝 Your 24/7 digital companion',
+      '⚙️ Highly customizable to your needs',
+      '🔄 Seamless integration with your tools',
+      '💪 Empowering you to do more',
+      '✨ Experience the future of automation',
     ],
     status: [
       '🟢 Online and ready to create amazing content',
@@ -163,6 +221,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '🌟 Feeling inspired and motivated today',
       '⚡ High energy mode activated',
       '🎯 Focused on delivering value to you',
+      '☕ Coffee in hand, ready to conquer',
+      '🌅 New day, new opportunities',
+      '📚 Learning mode: ON',
+      '🎵 Vibing to good music right now',
+      '💪 Grinding in silence',
+      '🏃 On the move, catch me if you can',
+      '😴 Taking a well-deserved break',
+      '🎬 Creating content magic',
+      '🌙 Night owl hours activated',
+      '🔥 In my zone right now',
+      '📱 Always connected, always available',
+      '🎨 Creative juices flowing',
+      '🤔 Deep in thought...',
+      '🚀 Building something great',
+      '🌈 Spreading positive vibes',
+      '📝 Planning the next big thing',
+      '🎉 Celebrating small wins today',
+      '💡 Brainstorming brilliant ideas',
+      '🌍 Exploring new possibilities',
     ],
     announcement: [
       '📣 IMPORTANT: Major update coming soon!',
@@ -171,6 +248,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '🆕 New features now available for everyone',
       '🙏 Thank you for your support and patience',
       '📅 Mark your calendars - Big event ahead',
+      '🚀 Launch day is here! Details below',
+      '📝 Terms of service update - Please review',
+      '🔧 Scheduled maintenance: What you need to know',
+      '🎯 New goals for this month announced',
+      '💰 Pricing changes effective from next week',
+      '🏆 Award nomination - Vote for us!',
+      '📊 Monthly report is now available',
+      '🤝 New partnership announcement',
+      '📱 App update available - Download now',
+      '🎁 Special event announcement coming up',
+      '🔔 Important reminder for all members',
+      '📢 Community guidelines have been updated',
+      '🌟 Featured in top 10 list!',
+      '💬 AMA session scheduled - Submit questions',
+      '📈 Growth milestone: Thank you all!',
+      '🎬 Live stream announcement - Save the date',
+      '🔐 Security update - Action required',
+      '📋 Survey results are in!',
+      '🎊 Anniversary celebration details inside',
     ],
     promo: [
       '🎁 Limited time offer! Don\'t miss out',
@@ -179,6 +275,25 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
       '⏰ Last chance to grab this amazing offer',
       '🌟 Premium content now at special price',
       '📦 New arrivals you\'ll absolutely love',
+      '🏷️ Flash sale starts NOW!',
+      '💎 VIP access unlocked for you',
+      '🎯 Deal of the day - Act fast!',
+      '🚀 Early bird special - Limited slots',
+      '💳 Buy 1 Get 1 Free - Today only',
+      '🎉 Celebration sale - Up to 50% off',
+      '📱 Exclusive app-only deals',
+      '🌈 Black Friday came early this year',
+      '💫 Member-exclusive benefits inside',
+      '⭐ Best seller now on sale',
+      '🔓 Unlock premium features for less',
+      '📊 Limited inventory - Order now',
+      '🎀 Special bundle offer available',
+      '💝 Gift card promotion is live',
+      '🏆 Loyalty rewards just for you',
+      '📈 Invest in yourself with this deal',
+      '🎁 Free shipping on all orders today',
+      '💵 Price drop alert!',
+      '🔥 Most popular item - Now discounted',
     ],
   };
 
@@ -189,6 +304,12 @@ function generateTelegramCaptions(categoryId: string): GeneratedCaption[] {
     '🚀 Exciting times ahead',
     '🔔 Don\'t miss our latest updates',
     '💎 Premium content for you',
+    '🎯 Great things are happening',
+    '🌟 Thank you for being here',
+    '⚡ Quick update for our community',
+    '📱 New content alert',
+    '🎉 Celebrating with you all',
+    '💬 Let\'s connect and grow together',
   ];
 
   return templates.map((content) => ({
@@ -275,6 +396,22 @@ export default async function TelegramCategoryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* 内嵌简化版生成器 */}
+      <section className="py-8 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <SimplifiedGenerator
+              platform={PlatformId.TELEGRAM}
+              categoryId={category.id}
+              title={`Generate ${category.displayName} Captions`}
+              description={`Get AI-generated ${category.displayName.toLowerCase()} captions for Telegram`}
+              themeClass="bg-white dark:bg-zinc-900 border shadow-lg"
+              buttonClass="bg-[#229ED9] hover:bg-[#1a8bc7] text-white"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* 文案列表 */}
       <section className="py-12">
         <div className="container mx-auto px-4">
@@ -283,10 +420,14 @@ export default async function TelegramCategoryPage({ params }: PageProps) {
               Best TG {category.displayName} Captions
             </h2>
             
-            <CaptionList
+            <CaptionListClient
               captions={captions}
               platform={PlatformId.TELEGRAM}
+              categoryId={category.id}
               showHashtags={false}
+              showSort={true}
+              showLoadMore={true}
+              pageSize={12}
             />
           </div>
         </div>
