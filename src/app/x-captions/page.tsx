@@ -169,17 +169,19 @@ export default function XCaptionsPage() {
               const Icon = cat.icon;
               
               return (
-                <Card key={cat.id} className="text-center hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-                      <Icon className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-                    </div>
-                    <CardTitle className="text-lg">{cat.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{cat.description}</CardDescription>
-                  </CardContent>
-                </Card>
+                <Link key={cat.id} href={`/x-captions/${cat.id}`}>
+                  <Card className="text-center hover:shadow-md transition-shadow cursor-pointer group h-full">
+                    <CardHeader>
+                      <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <Icon className="h-6 w-6 text-gray-800 dark:text-gray-200" />
+                      </div>
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">{cat.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{cat.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>
@@ -202,7 +204,7 @@ export default function XCaptionsPage() {
             {topicCategories.map((topic) => (
               <Link
                 key={topic.id}
-                href={`/generator?platform=x&topic=${topic.id}`}
+                href={`/x-captions/${topic.id}`}
               >
                 <Badge
                   variant="secondary"
