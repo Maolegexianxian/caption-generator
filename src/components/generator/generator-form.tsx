@@ -7,6 +7,7 @@
 
 import { useState, useCallback } from 'react';
 import { Sparkles, RefreshCw, MessageCircle, Instagram, Twitter } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -135,16 +136,31 @@ export function GeneratorForm({
         }),
       });
 
-      const result: GenerateResponse = await response.json();
+      const result = await response.json();
 
-      if (result.success) {
-        setResults(result.captions);
-        onGenerate?.(result);
+      // 处理 API 响应格式：{ success: true, data: GenerateResponse }
+      if (result.success && result.data) {
+        const generateResponse = result.data as GenerateResponse;
+        if (generateResponse.success && generateResponse.captions) {
+          setResults(generateResponse.captions);
+          onGenerate?.(generateResponse);
+          toast.success('Captions generated!', {
+            description: `${generateResponse.captions.length} captions ready to copy`,
+          });
+        } else {
+          const errorMsg = generateResponse.error || 'Generation failed';
+          setError(errorMsg);
+          toast.error('Generation failed', { description: errorMsg });
+        }
       } else {
-        setError(result.error || 'Generation failed');
+        const errorMsg = result.error || 'Generation failed';
+        setError(errorMsg);
+        toast.error('Generation failed', { description: errorMsg });
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Unknown error');
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      setError(errorMsg);
+      toast.error('Failed to generate', { description: errorMsg });
     } finally {
       setIsGenerating(false);
     }
