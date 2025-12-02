@@ -56,6 +56,23 @@ export function CaptionCard({
   };
 
   /**
+   * 更新复制统计（异步，不阻塞用户操作）
+   * @param captionId - 文案 ID
+   */
+  const updateCopyStats = async (captionId: string) => {
+    try {
+      await fetch(`/api/captions/${captionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'copy' }),
+      });
+    } catch (error) {
+      // 统计更新失败不影响用户体验，静默处理
+      console.debug('Failed to update copy stats:', error);
+    }
+  };
+
+  /**
    * 处理复制文案
    */
   const handleCopyCaption = async () => {
@@ -83,6 +100,12 @@ export function CaptionCard({
         description: 'Ready to paste to your social media',
       });
       onCopy?.(textToCopy);
+      
+      // 更新复制统计（如果文案有 ID）
+      const captionId = 'id' in caption ? caption.id : null;
+      if (captionId && typeof captionId === 'string' && captionId.length > 0) {
+        updateCopyStats(captionId);
+      }
       
       // 3秒后重置状态
       setTimeout(() => setCopied(false), 3000);

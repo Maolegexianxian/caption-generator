@@ -14,6 +14,7 @@ import {
   platformCategories,
   layoutPresets,
   seoPages,
+  captions,
 } from './schema';
 import {
   PLATFORMS_CONFIG,
@@ -319,6 +320,128 @@ async function seedSeoPages(): Promise<void> {
 }
 
 /**
+ * 预生成文案数据
+ * @description 为各分类预生成一些高质量文案
+ */
+async function seedCaptions(): Promise<void> {
+  console.log('📝 初始化预生成文案数据...');
+  
+  /** 各分类的预生成文案（使用有效的 mood ID: funny, cute, cool, romantic, sad, motivational, aesthetic, savage, sarcastic, inspirational） */
+  const captionTemplates: Record<string, { content: string; mood?: string }[]> = {
+    selfie: [
+      { content: 'Be yourself, there is no one better ✨', mood: 'inspirational' },
+      { content: 'Confidence level: Selfie with no filter 💅', mood: 'savage' },
+      { content: 'Just me being me 📸', mood: 'cute' },
+      { content: 'Self love is the best love 💕', mood: 'romantic' },
+      { content: 'Good vibes and selfies only', mood: 'cool' },
+      { content: 'Woke up like this 😌', mood: 'savage' },
+      { content: 'Not perfect, just real', mood: 'inspirational' },
+      { content: 'Making memories with myself', mood: 'cute' },
+      { content: 'This is my happy face 😊', mood: 'cute' },
+      { content: 'Feeling myself today', mood: 'savage' },
+    ],
+    travel: [
+      { content: 'Adventure awaits ✈️', mood: 'inspirational' },
+      { content: 'Collect moments, not things', mood: 'inspirational' },
+      { content: 'Wanderlust and city dust', mood: 'aesthetic' },
+      { content: 'Lost in the right direction 🧭', mood: 'cool' },
+      { content: 'Travel far, travel wide', mood: 'inspirational' },
+      { content: 'The world is my playground 🌍', mood: 'motivational' },
+      { content: 'Eat. Sleep. Travel. Repeat.', mood: 'funny' },
+      { content: 'Leave only footprints, take only memories', mood: 'inspirational' },
+      { content: 'Not all who wander are lost', mood: 'aesthetic' },
+      { content: 'Life is short and the world is wide', mood: 'inspirational' },
+    ],
+    food: [
+      { content: 'Good food, good mood 🍕', mood: 'cute' },
+      { content: 'Eating my way through life', mood: 'funny' },
+      { content: 'Food is my love language 💕', mood: 'romantic' },
+      { content: 'Life is too short for bad food', mood: 'inspirational' },
+      { content: 'First we eat, then we do everything else', mood: 'funny' },
+      { content: 'Happiness is homemade 🏠', mood: 'cute' },
+      { content: 'Food before dudes 🍔', mood: 'savage' },
+      { content: 'Diet starts tomorrow... maybe', mood: 'funny' },
+      { content: 'But first, coffee ☕', mood: 'cute' },
+      { content: 'Cooking is love made visible', mood: 'romantic' },
+    ],
+    couple: [
+      { content: 'You are my favorite notification 💕', mood: 'romantic' },
+      { content: 'Together is my favorite place to be', mood: 'romantic' },
+      { content: 'You make my heart smile 💑', mood: 'romantic' },
+      { content: 'Love you to the moon and back 🌙', mood: 'romantic' },
+      { content: 'My partner in crime and in life', mood: 'cute' },
+      { content: 'Forever is not long enough with you', mood: 'romantic' },
+      { content: 'Home is wherever I am with you', mood: 'romantic' },
+      { content: 'I choose you, every day', mood: 'romantic' },
+      { content: 'Together we have it all', mood: 'cute' },
+      { content: 'You are worth every mile between us', mood: 'romantic' },
+    ],
+    friends: [
+      { content: 'Friends who slay together, stay together 💅', mood: 'savage' },
+      { content: 'Good times + Crazy friends = Amazing memories', mood: 'funny' },
+      { content: 'Squad goals 🔥', mood: 'cool' },
+      { content: 'Life is better with friends', mood: 'inspirational' },
+      { content: 'My tribe, my vibe 👯', mood: 'cool' },
+      { content: 'Friends are the family we choose', mood: 'inspirational' },
+      { content: 'Real queens fix each other\'s crowns 👑', mood: 'savage' },
+      { content: 'Best friends don\'t let you do stupid things... alone', mood: 'funny' },
+      { content: 'Finding friends with the same mental disorder: Priceless', mood: 'sarcastic' },
+      { content: 'Friendship isn\'t a big thing, it\'s a million little things', mood: 'inspirational' },
+    ],
+  };
+
+  const captionData: Array<{
+    id: string;
+    content: string;
+    formattedContent: string;
+    platformId: string;
+    categoryId: string;
+    moodId: string | null;
+    language: string;
+    lengthType: string;
+    characterCount: number;
+    copyCount: number;
+    viewCount: number;
+    qualityScore: number;
+    isFeatured: boolean;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }> = [];
+  const now = new Date().toISOString();
+
+  // 为每个分类生成文案
+  Object.entries(captionTemplates).forEach(([categoryId, templates]) => {
+    templates.forEach((template, index) => {
+      // 为 Instagram 生成
+      captionData.push({
+        id: generateUniqueId(),
+        content: template.content,
+        formattedContent: template.content,
+        platformId: PlatformId.INSTAGRAM,
+        categoryId,
+        moodId: template.mood || null,
+        language: 'en',
+        lengthType: template.content.length <= 80 ? 'short' : template.content.length <= 200 ? 'medium' : 'long',
+        characterCount: template.content.length,
+        copyCount: Math.floor(Math.random() * 100),
+        viewCount: Math.floor(Math.random() * 500),
+        qualityScore: 80 + Math.random() * 20,
+        isFeatured: index < 3,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
+  });
+
+  if (captionData.length > 0) {
+    await db.insert(captions).values(captionData);
+  }
+  console.log(`✅ 已插入 ${captionData.length} 条预生成文案`);
+}
+
+/**
  * 主函数：执行所有种子数据初始化
  * @description 按顺序执行所有初始化操作
  */
@@ -338,6 +461,7 @@ async function main(): Promise<void> {
     await seedPlatformCategories();
     await seedLayoutPresets();
     await seedSeoPages();
+    await seedCaptions();
     
     console.log('\n🎉 数据库种子数据初始化完成！');
   } catch (error) {
