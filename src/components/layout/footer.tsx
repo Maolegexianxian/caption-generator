@@ -30,7 +30,7 @@ const footerLinkGroups: FooterLinkGroup[] = [
     links: [
       { title: 'TG Captions', href: '/tg-captions' },
       { title: 'Instagram Captions', href: '/captions-for-instagram' },
-      { title: 'X Captions', href: '/x-captions' },
+      { title: 'X (Twitter) Captions', href: '/x-captions' },
     ],
   },
   {
@@ -41,10 +41,12 @@ const footerLinkGroups: FooterLinkGroup[] = [
     })),
   },
   {
-    title: 'Tools',
+    title: 'Tools & Resources',
     links: [
       { title: 'AI Caption Generator', href: '/generator' },
-      { title: 'Random Caption', href: '/generator?mode=random' },
+      { title: 'Instagram Generator', href: '/generator?platform=instagram' },
+      { title: 'TG Generator', href: '/generator?platform=telegram' },
+      { title: 'X Generator', href: '/generator?platform=x' },
     ],
   },
 ];

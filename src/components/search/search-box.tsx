@@ -71,6 +71,23 @@ export function SearchBox({
   /** 路由 */
   const router = useRouter();
 
+  /** TG 特定分类 */
+  const TG_CATEGORIES = [
+    { id: 'channel', name: 'Channel Posts', icon: '📢' },
+    { id: 'group', name: 'Group Messages', icon: '👥' },
+    { id: 'bot', name: 'Bot Descriptions', icon: '🤖' },
+    { id: 'announcement', name: 'Announcements', icon: '📣' },
+  ];
+
+  /** X 特定分类 */
+  const X_CATEGORIES = [
+    { id: 'post', name: 'Single Posts', icon: '💬' },
+    { id: 'thread', name: 'Threads', icon: '🧵' },
+    { id: 'tech', name: 'Tech', icon: '💻' },
+    { id: 'ai', name: 'AI', icon: '🤖' },
+    { id: 'motivation', name: 'Motivation', icon: '💪' },
+  ];
+
   /**
    * 执行搜索
    * @param searchQuery - 搜索关键词
@@ -84,42 +101,7 @@ export function SearchBox({
     const lowerQuery = searchQuery.toLowerCase();
     const searchResults: SearchResult[] = [];
 
-    // 搜索分类
-    CATEGORIES_CONFIG.forEach((category) => {
-      if (
-        category.name.toLowerCase().includes(lowerQuery) ||
-        category.displayName.toLowerCase().includes(lowerQuery) ||
-        category.description?.toLowerCase().includes(lowerQuery)
-      ) {
-        searchResults.push({
-          type: 'category',
-          id: category.id,
-          title: category.displayName,
-          description: category.description,
-          icon: category.icon,
-          href: `/captions-for-instagram/${category.slug}`,
-        });
-      }
-    });
-
-    // 搜索情绪标签
-    MOODS_CONFIG.forEach((mood) => {
-      if (
-        mood.name.toLowerCase().includes(lowerQuery) ||
-        mood.displayName.toLowerCase().includes(lowerQuery)
-      ) {
-        searchResults.push({
-          type: 'mood',
-          id: mood.id,
-          title: mood.displayName,
-          description: `${mood.displayName} captions`,
-          icon: mood.icon,
-          href: `/generator?mood=${mood.id}`,
-        });
-      }
-    });
-
-    // 搜索平台
+    // 搜索平台（优先）
     Object.values(PlatformId).forEach((platformId) => {
       const platform = PLATFORMS_CONFIG[platformId];
       if (
@@ -136,7 +118,95 @@ export function SearchBox({
       }
     });
 
-    setResults(searchResults.slice(0, 10));
+    // 搜索 Instagram 分类
+    CATEGORIES_CONFIG.forEach((category) => {
+      if (
+        category.name.toLowerCase().includes(lowerQuery) ||
+        category.displayName.toLowerCase().includes(lowerQuery) ||
+        category.description?.toLowerCase().includes(lowerQuery)
+      ) {
+        searchResults.push({
+          type: 'category',
+          id: category.id,
+          title: `IG: ${category.displayName}`,
+          description: category.description,
+          icon: category.icon,
+          href: `/captions-for-instagram/${category.slug}`,
+        });
+      }
+    });
+
+    // 搜索 TG 分类
+    TG_CATEGORIES.forEach((category) => {
+      if (category.name.toLowerCase().includes(lowerQuery)) {
+        searchResults.push({
+          type: 'category',
+          id: `tg-${category.id}`,
+          title: `TG: ${category.name}`,
+          description: `Telegram ${category.name.toLowerCase()} captions`,
+          icon: category.icon,
+          href: `/tg-captions/${category.id}`,
+        });
+      }
+    });
+
+    // 搜索 X 分类
+    X_CATEGORIES.forEach((category) => {
+      if (category.name.toLowerCase().includes(lowerQuery)) {
+        searchResults.push({
+          type: 'category',
+          id: `x-${category.id}`,
+          title: `X: ${category.name}`,
+          description: `X (Twitter) ${category.name.toLowerCase()} captions`,
+          icon: category.icon,
+          href: `/x-captions/${category.id}`,
+        });
+      }
+    });
+
+    // 搜索情绪标签
+    MOODS_CONFIG.forEach((mood) => {
+      if (
+        mood.name.toLowerCase().includes(lowerQuery) ||
+        mood.displayName.toLowerCase().includes(lowerQuery)
+      ) {
+        searchResults.push({
+          type: 'mood',
+          id: mood.id,
+          title: mood.displayName,
+          description: `${mood.displayName} style captions`,
+          icon: mood.icon,
+          href: `/generator?mood=${mood.id}`,
+        });
+      }
+    });
+
+    // 特殊关键词搜索
+    const specialKeywords = [
+      { keywords: ['generate', 'create', 'make', 'ai'], title: 'AI Caption Generator', href: '/generator', icon: '✨' },
+      { keywords: ['hashtag', 'tag', '#'], title: 'Hashtag Generator', href: '/generator?includeHashtags=true', icon: '#️⃣' },
+      { keywords: ['selfie', 'self', 'me'], title: 'Selfie Captions', href: '/captions-for-instagram/selfie', icon: '📸' },
+      { keywords: ['travel', 'trip', 'vacation'], title: 'Travel Captions', href: '/captions-for-instagram/travel', icon: '✈️' },
+      { keywords: ['food', 'eat', 'restaurant'], title: 'Food Captions', href: '/captions-for-instagram/food', icon: '🍕' },
+    ];
+
+    specialKeywords.forEach(({ keywords, title, href, icon }) => {
+      if (keywords.some(k => lowerQuery.includes(k))) {
+        // 避免重复
+        if (!searchResults.some(r => r.href === href)) {
+          searchResults.push({
+            type: 'category',
+            id: `special-${title}`,
+            title,
+            description: 'Quick access',
+            icon,
+            href,
+          });
+        }
+      }
+    });
+
+    setResults(searchResults.slice(0, 12));
   }, []);
 
   /**

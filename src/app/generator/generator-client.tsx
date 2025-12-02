@@ -5,13 +5,15 @@
 
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GeneratorForm } from '@/components/generator/generator-form';
 import { GeneratorResults } from '@/components/generator/generator-results';
-import { useGeneratorStore } from '@/store/generator-store';
-import { PlatformId, LengthType } from '@/types';
+import { useGeneratorStore, selectGenerateParams } from '@/store/generator-store';
+import { PlatformId, LengthType, GenerateResponse } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GENERATOR_CONFIG } from '@/config/constants';
+import { toast } from 'sonner';
 
 /**
  * URL 参数处理组件
@@ -119,21 +121,78 @@ function GeneratorSkeleton() {
  */
 function GeneratorContent() {
   /** 获取 store 状态和方法 */
-  const { setResults, setIsGenerating, setError } = useGeneratorStore();
+  const { 
+    setResults, 
+    setIsGenerating, 
+    setError,
+    platform,
+    language,
+    moods,
+    category,
+    keywords,
+    lengthType,
+    layoutPreset,
+    includeHashtags,
+    includeEmoji,
+  } = useGeneratorStore();
 
   /**
    * 处理重新生成
-   * @description 清空当前结果，触发重新生成
+   * @description 使用当前参数重新调用 API 生成文案
    */
-  const handleRegenerate = () => {
-    // 清空当前结果
-    setResults([]);
+  const handleRegenerate = useCallback(async () => {
+    setIsGenerating(true);
     setError(null);
-    
-    // 触发表单提交（通过设置一个标志或直接调用）
-    // 这里我们简单地提示用户点击生成按钮
-    // 实际上可以通过 ref 或事件来触发
-  };
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platformId: platform,
+          language,
+          moodIds: moods,
+          categoryId: category,
+          keywords,
+          lengthType,
+          layoutPresetId: layoutPreset,
+          includeHashtags,
+          includeEmoji,
+          count: GENERATOR_CONFIG.defaultCount,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success || result.data?.success) {
+        const captions = result.captions || result.data?.captions || [];
+        setResults(captions);
+        toast.success('Captions regenerated!', {
+          description: `${captions.length} new captions generated`,
+        });
+      } else {
+        const errorMsg = result.error || result.data?.error || 'Regeneration failed';
+        setError(errorMsg);
+        toast.error('Failed to regenerate', {
+          description: errorMsg,
+        });
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      setError(errorMsg);
+      toast.error('Failed to regenerate', {
+        description: errorMsg,
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    platform, language, moods, category, keywords, lengthType, 
+    layoutPreset, includeHashtags, includeEmoji,
+    setResults, setIsGenerating, setError
+  ]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
