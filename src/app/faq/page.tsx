@@ -90,11 +90,37 @@ const faqs = [
 ];
 
 /**
+ * 生成 FAQ Schema JSON-LD
+ */
+function generateFaqSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+/**
  * FAQ 页面组件
  */
 export default function FAQPage() {
+  const faqSchema = generateFaqSchema();
+
   return (
     <div className="flex flex-col">
+      {/* FAQ Schema 结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       {/* 面包屑导航 */}
       <section className="bg-muted/30 py-4">
         <div className="container mx-auto px-4">

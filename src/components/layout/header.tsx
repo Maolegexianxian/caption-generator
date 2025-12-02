@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Sparkles, MessageCircle, Instagram, Twitter } from 'lucide-react';
+import { Menu, Sparkles, MessageCircle, Instagram, Twitter, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SearchBox } from '@/components/search/search-box';
@@ -56,6 +56,12 @@ const mainNavLinks: NavLink[] = [
     href: '/generator',
     icon: Sparkles,
     description: 'AI Caption Generator',
+  },
+  {
+    title: 'Batch',
+    href: '/batch',
+    icon: Calendar,
+    description: 'Batch Generator',
   },
 ];
 
