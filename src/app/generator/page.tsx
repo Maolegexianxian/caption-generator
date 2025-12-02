@@ -1,12 +1,13 @@
 /**
  * AI 文案生成器页面
- * @description 完整版本的 AI 文案生成工具页面
+ * @description 完整版本的 AI 文案生成工具页面，支持 URL 参数传递
  */
 
 import type { Metadata } from 'next';
-import { GeneratorForm } from '@/components/generator/generator-form';
-import { GeneratorResults } from '@/components/generator/generator-results';
+import { Suspense } from 'react';
 import { SITE_CONFIG } from '@/config/constants';
+import { GeneratorClient } from './generator-client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * 页面元数据
@@ -24,8 +25,26 @@ export const metadata: Metadata = {
 };
 
 /**
+ * 加载骨架屏组件
+ */
+function PageSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <Skeleton className="h-10 w-64 mx-auto mb-4" />
+        <Skeleton className="h-6 w-96 mx-auto" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+        <Skeleton className="h-[600px] w-full rounded-lg" />
+        <Skeleton className="h-[400px] w-full rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+/**
  * 生成器页面组件
- * @description 提供完整的 AI 文案生成功能
+ * @description 提供完整的 AI 文案生成功能，支持 URL 参数
  */
 export default function GeneratorPage() {
   return (
@@ -41,18 +60,10 @@ export default function GeneratorPage() {
         </p>
       </div>
 
-      {/* 主内容区域 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        {/* 生成器表单 */}
-        <div className="lg:sticky lg:top-24 lg:self-start">
-          <GeneratorForm />
-        </div>
-
-        {/* 生成结果 */}
-        <div>
-          <GeneratorResults />
-        </div>
-      </div>
+      {/* 主内容区域 - 使用 Suspense 包装客户端组件 */}
+      <Suspense fallback={<PageSkeleton />}>
+        <GeneratorClient />
+      </Suspense>
     </div>
   );
 }

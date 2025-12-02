@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
 import { CATEGORIES_CONFIG, MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
 import { PlatformId } from '@/types';
 
@@ -48,7 +49,7 @@ export default function InstagramCaptionsPage() {
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-pink-50 to-background dark:from-pink-950/20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center mb-12">
             {/* 平台图标 */}
             <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center mb-6">
               <Instagram className="h-10 w-10 text-white" />
@@ -64,16 +65,17 @@ export default function InstagramCaptionsPage() {
               {platformConfig.description}. Find the perfect caption for your Instagram posts, 
               Reels, and Stories. All captions are optimized with proper formatting and hashtags.
             </p>
-            
-            {/* CTA 按钮 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/generator?platform=instagram">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate Instagram Captions
-                </Link>
-              </Button>
-            </div>
+          </div>
+
+          {/* 内嵌简化版生成器 */}
+          <div className="max-w-2xl mx-auto">
+            <SimplifiedGenerator
+              platform={PlatformId.INSTAGRAM}
+              title="Quick Instagram Caption Generator"
+              description="Enter your topic and get AI-generated Instagram captions instantly"
+              themeClass="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border shadow-lg"
+              buttonClass="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 text-white"
+            />
           </div>
         </div>
       </section>

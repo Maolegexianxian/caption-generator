@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CaptionList } from '@/components/caption/caption-list';
+import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
 import { MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
@@ -124,7 +125,7 @@ export default function XCaptionsPage() {
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-background dark:from-gray-950/20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center mb-12">
             {/* 平台图标 */}
             <div className="mx-auto w-20 h-20 rounded-full bg-black flex items-center justify-center mb-6">
               <Twitter className="h-10 w-10 text-white" />
@@ -140,16 +141,17 @@ export default function XCaptionsPage() {
               {platformConfig.description}. Craft compelling tweets and threads that 
               resonate with your audience. All captions optimized for X&apos;s 280 character limit.
             </p>
-            
-            {/* CTA 按钮 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/generator?platform=x">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate X Captions
-                </Link>
-              </Button>
-            </div>
+          </div>
+
+          {/* 内嵌简化版生成器 */}
+          <div className="max-w-2xl mx-auto">
+            <SimplifiedGenerator
+              platform={PlatformId.X}
+              title="Quick X Caption Generator"
+              description="Enter your topic and get AI-generated tweets instantly (under 280 chars)"
+              themeClass="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border shadow-lg"
+              buttonClass="bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-black text-white"
+            />
           </div>
         </div>
       </section>

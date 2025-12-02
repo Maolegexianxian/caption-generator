@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CaptionList } from '@/components/caption/caption-list';
+import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
 import { MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
@@ -110,7 +111,7 @@ export default function TelegramCaptionsPage() {
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-blue-50 to-background dark:from-blue-950/20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center mb-12">
             {/* 平台图标 */}
             <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-6">
               <MessageCircle className="h-10 w-10 text-white" />
@@ -126,16 +127,17 @@ export default function TelegramCaptionsPage() {
               {platformConfig.description}. Find engaging captions for your Telegram channels, 
               groups, and bot descriptions. All captions are optimized for Telegram&apos;s format.
             </p>
-            
-            {/* CTA 按钮 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/generator?platform=telegram">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate TG Captions
-                </Link>
-              </Button>
-            </div>
+          </div>
+
+          {/* 内嵌简化版生成器 */}
+          <div className="max-w-2xl mx-auto">
+            <SimplifiedGenerator
+              platform={PlatformId.TELEGRAM}
+              title="Quick TG Caption Generator"
+              description="Enter your topic and get AI-generated Telegram captions instantly"
+              themeClass="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border shadow-lg"
+              buttonClass="bg-[#229ED9] hover:bg-[#1a8bc7] text-white"
+            />
           </div>
         </div>
       </section>
