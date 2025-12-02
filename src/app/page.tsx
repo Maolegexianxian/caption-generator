@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { PLATFORMS_CONFIG, CATEGORIES_CONFIG, SITE_CONFIG } from '@/config/constants';
 import { PlatformId } from '@/types';
+import { HeroGenerator } from '@/components/generator/hero-generator';
 
 /**
  * 平台卡片图标映射
