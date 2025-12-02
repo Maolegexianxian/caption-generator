@@ -5,12 +5,12 @@
 
 'use client';
 
-import { useEffect, Suspense, useRef, useCallback } from 'react';
+import { useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GeneratorForm } from '@/components/generator/generator-form';
 import { GeneratorResults } from '@/components/generator/generator-results';
-import { useGeneratorStore, selectGenerateParams } from '@/store/generator-store';
-import { PlatformId, LengthType, GenerateResponse } from '@/types';
+import { useGeneratorStore } from '@/store/generator-store';
+import { PlatformId, LengthType } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GENERATOR_CONFIG } from '@/config/constants';
 import { toast } from 'sonner';

@@ -117,7 +117,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Platform</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get captions optimized specifically for each social media platform's algorithm and audience
+              Get captions optimized specifically for each social media platform&apos;s algorithm and audience
             </p>
           </div>
           

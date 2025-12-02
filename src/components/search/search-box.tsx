@@ -51,6 +51,23 @@ interface SearchBoxProps {
   className?: string;
 }
 
+/** TG 特定分类（模块级常量） */
+const TG_CATEGORIES = [
+  { id: 'channel', name: 'Channel Posts', icon: '📢' },
+  { id: 'group', name: 'Group Messages', icon: '👥' },
+  { id: 'bot', name: 'Bot Descriptions', icon: '🤖' },
+  { id: 'announcement', name: 'Announcements', icon: '📣' },
+] as const;
+
+/** X 特定分类（模块级常量） */
+const X_CATEGORIES = [
+  { id: 'post', name: 'Single Posts', icon: '💬' },
+  { id: 'thread', name: 'Threads', icon: '🧵' },
+  { id: 'tech', name: 'Tech', icon: '💻' },
+  { id: 'ai', name: 'AI', icon: '🤖' },
+  { id: 'motivation', name: 'Motivation', icon: '💪' },
+] as const;
+
 /**
  * 搜索框组件
  * @description 提供全站搜索功能，使用对话框展示搜索结果
@@ -70,23 +87,6 @@ export function SearchBox({
   const inputRef = useRef<HTMLInputElement>(null);
   /** 路由 */
   const router = useRouter();
-
-  /** TG 特定分类 */
-  const TG_CATEGORIES = [
-    { id: 'channel', name: 'Channel Posts', icon: '📢' },
-    { id: 'group', name: 'Group Messages', icon: '👥' },
-    { id: 'bot', name: 'Bot Descriptions', icon: '🤖' },
-    { id: 'announcement', name: 'Announcements', icon: '📣' },
-  ];
-
-  /** X 特定分类 */
-  const X_CATEGORIES = [
-    { id: 'post', name: 'Single Posts', icon: '💬' },
-    { id: 'thread', name: 'Threads', icon: '🧵' },
-    { id: 'tech', name: 'Tech', icon: '💻' },
-    { id: 'ai', name: 'AI', icon: '🤖' },
-    { id: 'motivation', name: 'Motivation', icon: '💪' },
-  ];
 
   /**
    * 执行搜索
