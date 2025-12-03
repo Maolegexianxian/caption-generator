@@ -216,14 +216,14 @@ export function GeneratorForm({
         <div className="space-y-3">
           <Label className="text-sm font-medium">Category (Optional)</Label>
           <Select 
-            value={category || ''} 
-            onValueChange={(value) => setCategory(value || null)}
+            value={category || '__none__'} 
+            onValueChange={(value) => setCategory(value === '__none__' ? null : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No specific category</SelectItem>
+              <SelectItem value="__none__">No specific category</SelectItem>
               {CATEGORIES_CONFIG.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   <span className="flex items-center">
@@ -295,14 +295,14 @@ export function GeneratorForm({
             <div className="space-y-3">
               <Label className="text-sm font-medium">Format Preset</Label>
               <Select 
-                value={layoutPreset || ''} 
-                onValueChange={(value) => setLayoutPreset(value || null)}
+                value={layoutPreset || '__none__'} 
+                onValueChange={(value) => setLayoutPreset(value === '__none__' ? null : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a format" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Auto (Recommended)</SelectItem>
+                  <SelectItem value="__none__">Auto (Recommended)</SelectItem>
                   {currentPlatformConfig.layoutPresets.map((preset) => (
                     <SelectItem key={preset.id} value={preset.id}>
                       <div className="flex flex-col">
