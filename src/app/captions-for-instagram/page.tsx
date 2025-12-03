@@ -1,6 +1,7 @@
 /**
  * Instagram Captions 专题页面
  * @description 专为 Instagram 优化的文案专题页，用于 SEO 和用户浏览
+ * @module app/captions-for-instagram/page
  */
 
 import type { Metadata } from 'next';
@@ -11,27 +12,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
-import { CATEGORIES_CONFIG, MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
+import { CATEGORIES_CONFIG, MOODS_CONFIG, PLATFORMS_CONFIG, SITE_CONFIG } from '@/config/constants';
 import { PlatformId } from '@/types';
+import { INSTAGRAM_PAGE_SEO, GLOBAL_SEO_CONFIG } from '@/config/seo';
+import { 
+  PlatformPageJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  getPlatformBreadcrumbs,
+  type BreadcrumbItem as SeoBreakcrumbItem
+} from '@/components/seo';
 
 /**
  * 页面元数据 - SEO 优化
+ * @description 为 Instagram Captions 页面配置完整的元数据
  */
 export const metadata: Metadata = {
-  title: 'Captions for Instagram - Best Instagram Caption Ideas 2024',
-  description: 'Find the perfect captions for Instagram. Browse our collection of Instagram captions for selfies, travel, food, couples, and more. Copy and paste ready!',
-  keywords: [
-    'captions for instagram',
-    'instagram captions',
-    'instagram caption ideas',
-    'best instagram captions',
-    'instagram quotes',
-    'ig captions',
-    'instagram bio',
-  ],
+  title: INSTAGRAM_PAGE_SEO.title,
+  description: INSTAGRAM_PAGE_SEO.description,
+  keywords: INSTAGRAM_PAGE_SEO.keywords,
+  alternates: {
+    canonical: `${SITE_CONFIG.url}/captions-for-instagram`,
+  },
   openGraph: {
-    title: 'Captions for Instagram - Best Instagram Caption Ideas',
-    description: 'Find the perfect captions for Instagram. Browse our collection of Instagram captions for selfies, travel, food, couples, and more.',
+    title: INSTAGRAM_PAGE_SEO.openGraph?.title || INSTAGRAM_PAGE_SEO.title,
+    description: INSTAGRAM_PAGE_SEO.openGraph?.description || INSTAGRAM_PAGE_SEO.description,
+    url: `${SITE_CONFIG.url}/captions-for-instagram`,
+    type: 'website',
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: GLOBAL_SEO_CONFIG.defaultOgImage,
+        width: GLOBAL_SEO_CONFIG.ogImageWidth,
+        height: GLOBAL_SEO_CONFIG.ogImageHeight,
+        alt: 'Instagram Captions Generator',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: INSTAGRAM_PAGE_SEO.title,
+    description: INSTAGRAM_PAGE_SEO.description,
+    images: [GLOBAL_SEO_CONFIG.defaultOgImage],
   },
 };
 
@@ -41,11 +63,46 @@ export const metadata: Metadata = {
 const platformConfig = PLATFORMS_CONFIG[PlatformId.INSTAGRAM];
 
 /**
+ * 面包屑配置
+ * @description 用于 SEO 结构化数据
+ */
+const breadcrumbItems: SeoBreakcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Instagram Captions', isCurrent: true },
+];
+
+/**
+ * JSON-LD 面包屑项目
+ */
+const jsonLdBreadcrumbs = [
+  { name: 'Home', url: SITE_CONFIG.url },
+  { name: 'Instagram Captions', url: `${SITE_CONFIG.url}/captions-for-instagram` },
+];
+
+/**
  * Instagram Captions 专题页面组件
+ * @description 专题页面，包含生成器、分类导航和 SEO 优化内容
+ * @returns Instagram 专题页面 JSX
  */
 export default function InstagramCaptionsPage() {
   return (
     <div className="flex flex-col">
+      {/* SEO 结构化数据 */}
+      <PlatformPageJsonLd
+        platform="Instagram"
+        title={INSTAGRAM_PAGE_SEO.title}
+        description={INSTAGRAM_PAGE_SEO.description}
+        url={`${SITE_CONFIG.url}/captions-for-instagram`}
+        siteUrl={SITE_CONFIG.url}
+        breadcrumbs={jsonLdBreadcrumbs}
+        numberOfCaptions={500}
+      />
+      
+      {/* 面包屑导航 */}
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
+
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-pink-50 to-background dark:from-pink-950/20">
         <div className="container mx-auto px-4">

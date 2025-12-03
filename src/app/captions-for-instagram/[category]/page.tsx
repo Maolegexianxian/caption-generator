@@ -1,20 +1,28 @@
 /**
  * Instagram 分类详情页面
  * @description 特定分类的 Instagram 文案页面，用于 SEO 和用户浏览
+ * @module app/captions-for-instagram/[category]/page
  */
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Sparkles, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CaptionListClient } from '@/components/caption/caption-list-client';
 import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
-import { CATEGORIES_CONFIG, CATEGORY_HASHTAGS } from '@/config/constants';
+import { CATEGORIES_CONFIG, CATEGORY_HASHTAGS, SITE_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
+import { GLOBAL_SEO_CONFIG, generateCategoryPageSeo } from '@/config/seo';
+import { 
+  CategoryPageJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  type BreadcrumbItem as SeoBreakcrumbItem
+} from '@/components/seo';
 
 /**
  * 页面参数类型
@@ -45,6 +53,9 @@ export async function generateStaticParams() {
 
 /**
  * 生成页面元数据
+ * @description 根据分类动态生成 SEO 元数据
+ * @param props - 页面参数
+ * @returns Next.js Metadata 对象
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category: categorySlug } = await params;
@@ -53,25 +64,43 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!category) {
     return {
       title: 'Category Not Found',
+      description: 'The requested category was not found.',
     };
   }
 
-  const title = `${category.displayName} Captions for Instagram - Best ${category.displayName} Caption Ideas`;
-  const description = `Find the perfect ${category.displayName.toLowerCase()} captions for Instagram. Browse our curated collection of ${category.displayName.toLowerCase()} captions with hashtags. Copy and paste ready!`;
+  /** 使用 SEO 配置生成元数据 */
+  const seoConfig = generateCategoryPageSeo(category.displayName, category.slug, 'instagram');
+  
+  /** 规范链接 URL */
+  const canonicalUrl = `${SITE_CONFIG.url}/captions-for-instagram/${category.slug}`;
 
   return {
-    title,
-    description,
-    keywords: [
-      `${category.displayName.toLowerCase()} captions for instagram`,
-      `instagram ${category.displayName.toLowerCase()} captions`,
-      `${category.displayName.toLowerCase()} instagram quotes`,
-      `best ${category.displayName.toLowerCase()} captions`,
-      `${category.displayName.toLowerCase()} hashtags`,
-    ],
+    title: seoConfig.title,
+    description: seoConfig.description,
+    keywords: seoConfig.keywords,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title,
-      description,
+      title: seoConfig.openGraph?.title || seoConfig.title,
+      description: seoConfig.openGraph?.description || seoConfig.description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: SITE_CONFIG.name,
+      images: [
+        {
+          url: GLOBAL_SEO_CONFIG.defaultOgImage,
+          width: GLOBAL_SEO_CONFIG.ogImageWidth,
+          height: GLOBAL_SEO_CONFIG.ogImageHeight,
+          alt: `${category.displayName} Instagram Captions`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoConfig.title,
+      description: seoConfig.description,
+      images: [GLOBAL_SEO_CONFIG.defaultOgImage],
     },
   };
 }
@@ -520,24 +549,39 @@ export default async function InstagramCategoryPage({ params }: PageProps) {
   // 获取分类相关的 hashtags
   const hashtags = CATEGORY_HASHTAGS[category.id] || [];
 
+  /** 面包屑配置 */
+  const breadcrumbItems: SeoBreakcrumbItem[] = [
+    { label: 'Home', href: '/' },
+    { label: 'Instagram Captions', href: '/captions-for-instagram' },
+    { label: category.displayName, isCurrent: true },
+  ];
+
+  /** JSON-LD 面包屑项目 */
+  const jsonLdBreadcrumbs = [
+    { name: 'Home', url: SITE_CONFIG.url },
+    { name: 'Instagram Captions', url: `${SITE_CONFIG.url}/captions-for-instagram` },
+    { name: category.displayName, url: `${SITE_CONFIG.url}/captions-for-instagram/${category.slug}` },
+  ];
+
   return (
     <div className="flex flex-col">
+      {/* SEO 结构化数据 */}
+      <CategoryPageJsonLd
+        categoryName={category.displayName}
+        platform="Instagram"
+        title={`${category.displayName} Captions for Instagram`}
+        description={`Best ${category.displayName.toLowerCase()} captions for Instagram`}
+        url={`${SITE_CONFIG.url}/captions-for-instagram/${category.slug}`}
+        siteUrl={SITE_CONFIG.url}
+        parentUrl={`${SITE_CONFIG.url}/captions-for-instagram`}
+        breadcrumbs={jsonLdBreadcrumbs}
+        numberOfCaptions={captions.length}
+      />
+
       {/* 面包屑导航 */}
-      <section className="bg-muted/30 py-4">
-        <div className="container mx-auto px-4">
-          <nav className="flex items-center text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-primary">Home</Link>
-            <ChevronRight className="h-4 w-4 mx-2" />
-            <Link href="/captions-for-instagram" className="hover:text-primary">
-              Instagram Captions
-            </Link>
-            <ChevronRight className="h-4 w-4 mx-2" />
-            <span className="text-foreground font-medium">
-              {category.displayName}
-            </span>
-          </nav>
-        </div>
-      </section>
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
 
       {/* Hero 区域 */}
       <section className="py-12 bg-gradient-to-b from-pink-50 to-background dark:from-pink-950/20">

@@ -1,6 +1,7 @@
 /**
  * 首页组件
- * @description 网站首页，包含 AI 文案生成器入口和平台导航
+ * @description 网站首页，包含 AI 文案生成器入口、平台导航和 SEO 结构化数据
+ * @module app/page
  */
 
 import Link from 'next/link';
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { PLATFORMS_CONFIG, CATEGORIES_CONFIG, SITE_CONFIG } from '@/config/constants';
 import { PlatformId } from '@/types';
 import { HeroGenerator } from '@/components/generator/hero-generator';
+import { HomePageJsonLd } from '@/components/seo';
 
 /**
  * 平台卡片图标映射
@@ -72,6 +74,15 @@ const features = [
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* SEO 结构化数据 */}
+      <HomePageJsonLd
+        siteName={SITE_CONFIG.name}
+        siteUrl={SITE_CONFIG.url}
+        description={SITE_CONFIG.description}
+        logoUrl={`${SITE_CONFIG.url}/logo.png`}
+        searchUrl={`${SITE_CONFIG.url}/search?q={search_term_string}`}
+      />
+      
       {/* Hero 区域 */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         {/* 背景装饰 */}

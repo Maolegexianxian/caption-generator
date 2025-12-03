@@ -1,6 +1,7 @@
 /**
  * Telegram Captions 专题页面
  * @description 专为 Telegram 优化的文案专题页，用于 SEO 和用户浏览
+ * @module app/tg-captions/page
  */
 
 import type { Metadata } from 'next';
@@ -12,28 +13,48 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CaptionList } from '@/components/caption/caption-list';
 import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
-import { MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
+import { MOODS_CONFIG, PLATFORMS_CONFIG, SITE_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
+import { TELEGRAM_PAGE_SEO, GLOBAL_SEO_CONFIG } from '@/config/seo';
+import { 
+  PlatformPageJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  type BreadcrumbItem as SeoBreakcrumbItem
+} from '@/components/seo';
 
 /**
  * 页面元数据 - SEO 优化
+ * @description 为 Telegram Captions 页面配置完整的元数据
  */
 export const metadata: Metadata = {
-  title: 'TG Captions - Best Telegram Channel & Group Captions 2024',
-  description: 'Find the perfect TG captions for your Telegram channels and groups. Browse our collection of Telegram captions for channels, announcements, and posts. Copy and paste ready!',
-  keywords: [
-    'tg captions',
-    'telegram captions',
-    'telegram channel captions',
-    'telegram group captions',
-    'telegram bio',
-    'telegram quotes',
-    'telegram status',
-  ],
+  title: TELEGRAM_PAGE_SEO.title,
+  description: TELEGRAM_PAGE_SEO.description,
+  keywords: TELEGRAM_PAGE_SEO.keywords,
+  alternates: {
+    canonical: `${SITE_CONFIG.url}/tg-captions`,
+  },
   openGraph: {
-    title: 'TG Captions - Best Telegram Caption Ideas',
-    description: 'Find the perfect TG captions for your Telegram channels and groups. Browse our collection of Telegram captions.',
+    title: TELEGRAM_PAGE_SEO.openGraph?.title || TELEGRAM_PAGE_SEO.title,
+    description: TELEGRAM_PAGE_SEO.openGraph?.description || TELEGRAM_PAGE_SEO.description,
+    url: `${SITE_CONFIG.url}/tg-captions`,
+    type: 'website',
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: GLOBAL_SEO_CONFIG.defaultOgImage,
+        width: GLOBAL_SEO_CONFIG.ogImageWidth,
+        height: GLOBAL_SEO_CONFIG.ogImageHeight,
+        alt: 'Telegram Captions Generator',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TELEGRAM_PAGE_SEO.title,
+    description: TELEGRAM_PAGE_SEO.description,
+    images: [GLOBAL_SEO_CONFIG.defaultOgImage],
   },
 };
 
@@ -101,13 +122,48 @@ function generateTelegramCaptions(): GeneratedCaption[] {
 }
 
 /**
+ * 面包屑配置
+ * @description 用于 SEO 结构化数据
+ */
+const breadcrumbItems: SeoBreakcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'TG Captions', isCurrent: true },
+];
+
+/**
+ * JSON-LD 面包屑项目
+ */
+const jsonLdBreadcrumbs = [
+  { name: 'Home', url: SITE_CONFIG.url },
+  { name: 'TG Captions', url: `${SITE_CONFIG.url}/tg-captions` },
+];
+
+/**
  * Telegram Captions 专题页面组件
+ * @description 专题页面，包含生成器、分类导航和 SEO 优化内容
+ * @returns Telegram 专题页面 JSX
  */
 export default function TelegramCaptionsPage() {
   const captions = generateTelegramCaptions();
 
   return (
     <div className="flex flex-col">
+      {/* SEO 结构化数据 */}
+      <PlatformPageJsonLd
+        platform="Telegram"
+        title={TELEGRAM_PAGE_SEO.title}
+        description={TELEGRAM_PAGE_SEO.description}
+        url={`${SITE_CONFIG.url}/tg-captions`}
+        siteUrl={SITE_CONFIG.url}
+        breadcrumbs={jsonLdBreadcrumbs}
+        numberOfCaptions={300}
+      />
+      
+      {/* 面包屑导航 */}
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
+
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-blue-50 to-background dark:from-blue-950/20">
         <div className="container mx-auto px-4">

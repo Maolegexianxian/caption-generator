@@ -1,6 +1,7 @@
 /**
  * X (Twitter) Captions 专题页面
  * @description 专为 X (Twitter) 优化的文案专题页，用于 SEO 和用户浏览
+ * @module app/x-captions/page
  */
 
 import type { Metadata } from 'next';
@@ -12,28 +13,48 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CaptionList } from '@/components/caption/caption-list';
 import { SimplifiedGenerator } from '@/components/generator/simplified-generator';
-import { MOODS_CONFIG, PLATFORMS_CONFIG } from '@/config/constants';
+import { MOODS_CONFIG, PLATFORMS_CONFIG, SITE_CONFIG } from '@/config/constants';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
+import { X_PAGE_SEO, GLOBAL_SEO_CONFIG } from '@/config/seo';
+import { 
+  PlatformPageJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  type BreadcrumbItem as SeoBreakcrumbItem
+} from '@/components/seo';
 
 /**
  * 页面元数据 - SEO 优化
+ * @description 为 X (Twitter) Captions 页面配置完整的元数据
  */
 export const metadata: Metadata = {
-  title: 'X Captions - Best Twitter Captions & Tweet Ideas 2024',
-  description: 'Find the perfect captions for X (Twitter). Browse our collection of tweet ideas, thread starters, and viral post templates. All within 280 characters!',
-  keywords: [
-    'x captions',
-    'twitter captions',
-    'tweet ideas',
-    'twitter quotes',
-    'viral tweets',
-    'twitter thread',
-    'x post ideas',
-  ],
+  title: X_PAGE_SEO.title,
+  description: X_PAGE_SEO.description,
+  keywords: X_PAGE_SEO.keywords,
+  alternates: {
+    canonical: `${SITE_CONFIG.url}/x-captions`,
+  },
   openGraph: {
-    title: 'X Captions - Best Twitter Caption Ideas',
-    description: 'Find the perfect captions for X (Twitter). Browse our collection of tweet ideas and viral post templates.',
+    title: X_PAGE_SEO.openGraph?.title || X_PAGE_SEO.title,
+    description: X_PAGE_SEO.openGraph?.description || X_PAGE_SEO.description,
+    url: `${SITE_CONFIG.url}/x-captions`,
+    type: 'website',
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: GLOBAL_SEO_CONFIG.defaultOgImage,
+        width: GLOBAL_SEO_CONFIG.ogImageWidth,
+        height: GLOBAL_SEO_CONFIG.ogImageHeight,
+        alt: 'X Twitter Captions Generator',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: X_PAGE_SEO.title,
+    description: X_PAGE_SEO.description,
+    images: [GLOBAL_SEO_CONFIG.defaultOgImage],
   },
 };
 
@@ -115,13 +136,48 @@ function generateXCaptions(): GeneratedCaption[] {
 }
 
 /**
+ * 面包屑配置
+ * @description 用于 SEO 结构化数据
+ */
+const breadcrumbItems: SeoBreakcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'X Captions', isCurrent: true },
+];
+
+/**
+ * JSON-LD 面包屑项目
+ */
+const jsonLdBreadcrumbs = [
+  { name: 'Home', url: SITE_CONFIG.url },
+  { name: 'X Captions', url: `${SITE_CONFIG.url}/x-captions` },
+];
+
+/**
  * X Captions 专题页面组件
+ * @description 专题页面，包含生成器、分类导航和 SEO 优化内容
+ * @returns X 专题页面 JSX
  */
 export default function XCaptionsPage() {
   const captions = generateXCaptions();
 
   return (
     <div className="flex flex-col">
+      {/* SEO 结构化数据 */}
+      <PlatformPageJsonLd
+        platform="X (Twitter)"
+        title={X_PAGE_SEO.title}
+        description={X_PAGE_SEO.description}
+        url={`${SITE_CONFIG.url}/x-captions`}
+        siteUrl={SITE_CONFIG.url}
+        breadcrumbs={jsonLdBreadcrumbs}
+        numberOfCaptions={300}
+      />
+      
+      {/* 面包屑导航 */}
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
+
       {/* Hero 区域 */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-background dark:from-gray-950/20">
         <div className="container mx-auto px-4">
