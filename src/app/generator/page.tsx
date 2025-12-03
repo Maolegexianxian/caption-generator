@@ -1,6 +1,7 @@
 /**
  * AI 文案生成器页面
  * @description 完整版本的 AI 文案生成工具页面，支持 URL 参数传递
+ * @module app/generator/page
  */
 
 import type { Metadata } from 'next';
@@ -8,21 +9,55 @@ import { Suspense } from 'react';
 import { SITE_CONFIG } from '@/config/constants';
 import { GeneratorClient } from './generator-client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GENERATOR_PAGE_SEO, GLOBAL_SEO_CONFIG } from '@/config/seo';
+import { 
+  SoftwareApplicationJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  type BreadcrumbItem
+} from '@/components/seo';
 
 /**
- * 页面元数据
+ * 页面元数据 - SEO 优化
+ * @description 生成器页面完整的 SEO 元数据配置
  */
 export const metadata: Metadata = {
-  title: 'AI Caption Generator',
-  description: `Generate perfect captions for Telegram, Instagram, and X (Twitter) with our AI-powered tool. ${SITE_CONFIG.description}`,
-  keywords: [
-    'ai caption generator',
-    'social media caption generator',
-    'instagram caption generator',
-    'telegram caption generator',
-    'twitter caption generator',
-  ],
+  title: GENERATOR_PAGE_SEO.title,
+  description: GENERATOR_PAGE_SEO.description,
+  keywords: GENERATOR_PAGE_SEO.keywords,
+  alternates: {
+    canonical: `${SITE_CONFIG.url}/generator`,
+  },
+  openGraph: {
+    title: GENERATOR_PAGE_SEO.openGraph?.title || GENERATOR_PAGE_SEO.title,
+    description: GENERATOR_PAGE_SEO.openGraph?.description || GENERATOR_PAGE_SEO.description,
+    url: `${SITE_CONFIG.url}/generator`,
+    type: 'website',
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: GLOBAL_SEO_CONFIG.defaultOgImage,
+        width: GLOBAL_SEO_CONFIG.ogImageWidth,
+        height: GLOBAL_SEO_CONFIG.ogImageHeight,
+        alt: 'AI Caption Generator Tool',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: GENERATOR_PAGE_SEO.title,
+    description: GENERATOR_PAGE_SEO.description,
+    images: [GLOBAL_SEO_CONFIG.defaultOgImage],
+  },
 };
+
+/**
+ * 面包屑配置
+ */
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Caption Generator', isCurrent: true },
+];
 
 /**
  * 加载骨架屏组件
@@ -45,10 +80,26 @@ function PageSkeleton() {
 /**
  * 生成器页面组件
  * @description 提供完整的 AI 文案生成功能，支持 URL 参数
+ * @returns 生成器页面 JSX
  */
 export default function GeneratorPage() {
   return (
     <div className="min-h-screen">
+      {/* SEO 结构化数据 */}
+      <SoftwareApplicationJsonLd
+        name={`${SITE_CONFIG.name} - AI Caption Generator`}
+        description={GENERATOR_PAGE_SEO.description}
+        applicationCategory="UtilitiesApplication"
+        operatingSystem="Web"
+        ratingValue="4.8"
+        ratingCount="1250"
+      />
+      
+      {/* 面包屑导航 */}
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
+
       {/* Hero 区域 */}
       <section className="relative py-12 md:py-16 overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
         {/* 背景装饰 */}

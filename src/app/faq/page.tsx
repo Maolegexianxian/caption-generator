@@ -1,11 +1,12 @@
 /**
  * 常见问题页面
- * @description FAQ 页面，回答用户常见问题
+ * @description FAQ 页面，回答用户常见问题，包含 FAQ 结构化数据
+ * @module app/faq/page
  */
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -14,13 +15,47 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { SITE_CONFIG } from '@/config/constants';
+import { GLOBAL_SEO_CONFIG, FAQ_PAGE_SEO } from '@/config/seo';
+import { 
+  FAQJsonLd, 
+  Breadcrumb, 
+  BreadcrumbContainer,
+  type BreadcrumbItem,
+  type FAQItem
+} from '@/components/seo';
 
 /**
- * 页面元数据
+ * 页面元数据 - SEO 优化
+ * @description FAQ 页面完整的 SEO 元数据配置
  */
 export const metadata: Metadata = {
-  title: 'FAQ - Frequently Asked Questions',
-  description: `Frequently asked questions about ${SITE_CONFIG.name}. Learn how to use our AI caption generator, supported platforms, and more.`,
+  title: FAQ_PAGE_SEO.title,
+  description: FAQ_PAGE_SEO.description,
+  keywords: FAQ_PAGE_SEO.keywords,
+  alternates: {
+    canonical: `${SITE_CONFIG.url}/faq`,
+  },
+  openGraph: {
+    title: FAQ_PAGE_SEO.openGraph?.title || FAQ_PAGE_SEO.title,
+    description: FAQ_PAGE_SEO.openGraph?.description || FAQ_PAGE_SEO.description,
+    url: `${SITE_CONFIG.url}/faq`,
+    type: 'website',
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: GLOBAL_SEO_CONFIG.defaultOgImage,
+        width: GLOBAL_SEO_CONFIG.ogImageWidth,
+        height: GLOBAL_SEO_CONFIG.ogImageHeight,
+        alt: 'Caption Generator FAQ',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: FAQ_PAGE_SEO.title,
+    description: FAQ_PAGE_SEO.description,
+    images: [GLOBAL_SEO_CONFIG.defaultOgImage],
+  },
 };
 
 /**
@@ -90,47 +125,36 @@ const faqs = [
 ];
 
 /**
- * 生成 FAQ Schema JSON-LD
+ * 面包屑配置
  */
-function generateFaqSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  };
-}
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'FAQ', isCurrent: true },
+];
+
+/**
+ * 将 FAQ 数据转换为 JSON-LD 格式
+ */
+const faqJsonLdItems: FAQItem[] = faqs.map((faq) => ({
+  question: faq.question,
+  answer: faq.answer,
+}));
 
 /**
  * FAQ 页面组件
+ * @description 常见问题页面，包含 FAQ 结构化数据和面包屑导航
+ * @returns FAQ 页面 JSX
  */
 export default function FAQPage() {
-  const faqSchema = generateFaqSchema();
-
   return (
     <div className="flex flex-col">
       {/* FAQ Schema 结构化数据 */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <FAQJsonLd items={faqJsonLdItems} />
 
       {/* 面包屑导航 */}
-      <section className="bg-muted/30 py-4">
-        <div className="container mx-auto px-4">
-          <nav className="flex items-center text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-primary">Home</Link>
-            <ChevronRight className="h-4 w-4 mx-2" />
-            <span className="text-foreground font-medium">FAQ</span>
-          </nav>
-        </div>
-      </section>
+      <BreadcrumbContainer>
+        <Breadcrumb items={breadcrumbItems} />
+      </BreadcrumbContainer>
 
       {/* 标题区域 */}
       <section className="py-12 bg-gradient-to-b from-primary/5 to-background">
