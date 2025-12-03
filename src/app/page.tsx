@@ -111,10 +111,40 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 统计数据区域 */}
+      <section className="py-16 border-b bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {[
+              { value: '1,000+', label: 'Caption Templates', icon: '📝' },
+              { value: '50K+', label: 'Captions Generated', icon: '✨' },
+              { value: '3', label: 'Platforms Supported', icon: '🌐' },
+              { value: '12', label: 'Content Categories', icon: '📂' },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                className="text-center group"
+              >
+                <div className="text-3xl mb-2">{stat.icon}</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-1 group-hover:scale-110 transition-transform">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-muted-foreground font-medium">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 平台选择区域 */}
       <section className="py-24 bg-muted/30 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 px-4 py-1">
+              Multi-Platform Support
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Platform</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get captions optimized specifically for each social media platform&apos;s algorithm and audience
@@ -153,8 +183,17 @@ export default function HomePage() {
 
       {/* 特性展示区域 */}
       <section className="py-24 relative overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/2 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        </div>
+        
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 px-4 py-1">
+              Powerful Features
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Us?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               The smartest way to create engaging social media content that converts
@@ -187,6 +226,9 @@ export default function HomePage() {
       <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-4 px-4 py-1">
+              Browse Categories
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Popular Categories</h2>
             <p className="text-lg text-muted-foreground">
               Find the perfect caption for any occasion

@@ -143,22 +143,25 @@ export function CaptionCard({
   const displayHashtags = getHashtags();
 
   return (
-    <Card className="group hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-4 space-y-3">
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+      {/* 顶部装饰条 */}
+      <div className="h-1 bg-gradient-to-r from-primary/60 via-purple-500/60 to-pink-500/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <CardContent className="p-5 space-y-4">
         {/* 文案内容 */}
-        <div className="min-h-[80px]">
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+        <div className="min-h-[90px]">
+          <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 group-hover:text-foreground transition-colors">
             {getContent()}
           </p>
         </div>
 
         {/* Hashtag 区域 */}
         {showHashtags && displayHashtags.length > 0 && (
-          <div className="pt-2 border-t">
+          <div className="pt-3 border-t border-border/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground flex items-center">
+              <span className="text-xs text-muted-foreground flex items-center font-medium">
                 <Hash className="h-3 w-3 mr-1" />
-                Hashtags
+                Hashtags ({displayHashtags.length})
               </span>
               <TooltipProvider>
                 <Tooltip>
@@ -166,7 +169,7 @@ export function CaptionCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-xs"
+                      className="h-6 px-2 text-xs hover:bg-primary/10"
                       onClick={handleCopyHashtags}
                     >
                       {hashtagsCopied ? (
@@ -182,19 +185,19 @@ export function CaptionCard({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="flex flex-wrap gap-1">
-              {displayHashtags.slice(0, 10).map((tag, index) => (
+            <div className="flex flex-wrap gap-1.5">
+              {displayHashtags.slice(0, 8).map((tag, index) => (
                 <Badge 
                   key={index} 
                   variant="secondary" 
-                  className="text-xs font-normal"
+                  className="text-xs font-normal px-2 py-0.5 bg-primary/5 hover:bg-primary/10 transition-colors cursor-default"
                 >
                   #{tag}
                 </Badge>
               ))}
-              {displayHashtags.length > 10 && (
-                <Badge variant="outline" className="text-xs">
-                  +{displayHashtags.length - 10} more
+              {displayHashtags.length > 8 && (
+                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                  +{displayHashtags.length - 8} more
                 </Badge>
               )}
             </div>
@@ -202,14 +205,16 @@ export function CaptionCard({
         )}
 
         {/* 操作按钮区域 */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between pt-3 border-t border-border/50">
           {/* 字符数显示 */}
-          <span className="text-xs text-muted-foreground">
-            {characterCount} characters
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+              {characterCount} chars
+            </span>
+          </div>
 
           {/* 操作按钮 */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {/* 生成相似按钮 */}
             {onGenerateSimilar && (
               <TooltipProvider>
@@ -218,11 +223,11 @@ export function CaptionCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8"
+                      className="h-8 text-muted-foreground hover:text-primary"
                       onClick={onGenerateSimilar}
                     >
-                      <Sparkles className="h-4 w-4 mr-1" />
-                      Similar
+                      <Sparkles className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">Similar</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -237,20 +242,22 @@ export function CaptionCard({
               originalContent={getContent()}
               platformId={platform}
               trigger={
-                <Button variant="ghost" size="sm" className="h-8">
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Rewrite
+                <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-primary">
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Rewrite</span>
                 </Button>
               }
             />
 
             {/* 复制按钮 */}
             <Button
-              variant={copied ? 'default' : 'secondary'}
+              variant={copied ? 'default' : 'default'}
               size="sm"
               className={cn(
-                'h-8 min-w-[80px]',
-                copied && 'bg-green-500 hover:bg-green-600'
+                'h-8 min-w-[85px] font-medium shadow-sm',
+                copied 
+                  ? 'bg-green-500 hover:bg-green-600 text-white' 
+                  : 'bg-primary hover:bg-primary/90'
               )}
               onClick={handleCopyCaption}
             >

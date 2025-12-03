@@ -12,6 +12,7 @@ import { Menu, Sparkles, MessageCircle, Instagram, Twitter, Calendar } from 'luc
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SearchBox } from '@/components/search/search-box';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import { SITE_CONFIG } from '@/config/constants';
 
@@ -122,19 +123,29 @@ export function Header() {
             })}
           </nav>
 
-          {/* 搜索框 */}
-          <div className="hidden md:block w-64">
-            <SearchBox />
-          </div>
+          {/* 右侧操作区 */}
+          <div className="flex items-center space-x-2">
+            {/* 搜索框 - 桌面端 */}
+            <div className="hidden lg:block w-64">
+              <SearchBox />
+            </div>
 
-          {/* 移动端菜单按钮 */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">打开菜单</span>
-              </Button>
-            </SheetTrigger>
+            {/* 搜索按钮 - 平板端 */}
+            <div className="hidden md:block lg:hidden">
+              <SearchBox className="w-auto" />
+            </div>
+
+            {/* 主题切换 */}
+            <ThemeToggle />
+
+            {/* 移动端菜单按钮 */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">打开菜单</span>
+                </Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <div className="flex flex-col space-y-4 mt-8">
                 {/* 移动端 Logo */}
@@ -181,7 +192,8 @@ export function Header() {
                 </nav>
               </div>
             </SheetContent>
-          </Sheet>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

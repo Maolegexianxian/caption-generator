@@ -48,22 +48,41 @@ function PageSkeleton() {
  */
 export default function GeneratorPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 页面标题 */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">
-          AI Caption Generator
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Generate engaging captions for your social media posts. 
-          Choose your platform, select a mood, and let AI create the perfect caption for you.
-        </p>
-      </div>
+    <div className="min-h-screen">
+      {/* Hero 区域 */}
+      <section className="relative py-12 md:py-16 overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="container mx-auto px-4">
+          {/* 页面标题 */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold bg-primary/10 text-primary mb-4">
+              ✨ AI-Powered
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              AI Caption Generator
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Generate engaging captions for your social media posts. 
+              Choose your platform, select a mood, and let AI create the perfect caption for you.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* 主内容区域 - 使用 Suspense 包装客户端组件 */}
-      <Suspense fallback={<PageSkeleton />}>
-        <GeneratorClient />
-      </Suspense>
+      {/* 主内容区域 */}
+      <section className="py-8 md:py-12">
+        <div className="container mx-auto px-4">
+          {/* 使用 Suspense 包装客户端组件 */}
+          <Suspense fallback={<PageSkeleton />}>
+            <GeneratorClient />
+          </Suspense>
+        </div>
+      </section>
     </div>
   );
 }
