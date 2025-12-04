@@ -218,10 +218,12 @@ export function HeroGenerator() {
                 radius="md"
                 size="lg"
                 classNames={{
-                  label: "text-base font-medium mb-2 text-foreground/80",
+                  base: "gap-2",
+                  label: "text-base font-medium text-foreground/80 pb-1",
+                  mainWrapper: "h-full",
                   inputWrapper: "h-14 border-default-200 hover:border-default-400 focus-within:border-foreground/50 bg-default-50/50 transition-colors",
                   innerWrapper: "gap-3",
-                  input: "text-base"
+                  input: "text-base placeholder:text-default-400"
                 }}
                 startContent={<Sparkles className={cn("w-5 h-5", theme.iconColor)} />}
               />
@@ -239,9 +241,12 @@ export function HeroGenerator() {
                 radius="md"
                 size="lg"
                 classNames={{
-                  label: "text-base font-medium mb-2 text-foreground/80",
+                  base: "gap-2",
+                  label: "text-base font-medium text-foreground/80 pb-1",
+                  mainWrapper: "h-full",
                   trigger: "h-14 border-default-200 hover:border-default-400 focus-within:border-foreground/50 bg-default-50/50 transition-colors",
-                  value: "text-base"
+                  value: "text-base",
+                  selectorIcon: "text-default-400"
                 }}
                 startContent={<Wand2 className={cn("w-5 h-5", theme.iconColor)} />}
               >
