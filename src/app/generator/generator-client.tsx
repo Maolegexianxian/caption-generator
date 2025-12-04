@@ -134,6 +134,9 @@ function GeneratorContent() {
     layoutPreset,
     includeHashtags,
     includeEmoji,
+    results,
+    isGenerating,
+    error,
   } = useGeneratorStore();
 
   /**
@@ -194,6 +197,20 @@ function GeneratorContent() {
     setResults, setIsGenerating, setError
   ]);
 
+  // 是否有结果/需要展示右侧区域
+  const hasResults = results.length > 0;
+  const showResultsColumn = hasResults || isGenerating || !!error;
+
+  // 初始状态：仅表单，单列居中
+  if (!showResultsColumn) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <GeneratorForm />
+      </div>
+    );
+  }
+
+  // 有结果/加载/错误时，使用双列布局
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
       {/* 生成器表单 */}

@@ -4,6 +4,8 @@
  * @note 当前版本使用静态配置数据，无需数据库
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { CATEGORIES_CONFIG, MOODS_CONFIG } from '@/config/constants';
 import { ApiResponse, PlatformId } from '@/types';

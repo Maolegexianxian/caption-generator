@@ -3,6 +3,8 @@
  * @description 查询文案列表，支持筛选、排序和分页
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { queryCaptions, CaptionQueryParams } from '@/services/caption-service';
 import { PlatformId, LengthType } from '@/types';

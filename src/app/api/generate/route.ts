@@ -3,6 +3,8 @@
  * @description 处理文案生成请求，调用 AI 服务生成文案
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { generateCaptions, validateGenerateRequest } from '@/services/ai-service';
 import { GenerateRequest, ApiResponse, GenerateResponse } from '@/types';

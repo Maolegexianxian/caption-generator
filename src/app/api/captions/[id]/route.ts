@@ -3,6 +3,8 @@
  * @description 获取、更新单个文案
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getCaptionById, incrementCaptionCopyCount, incrementCaptionViewCount } from '@/services/caption-service';
 

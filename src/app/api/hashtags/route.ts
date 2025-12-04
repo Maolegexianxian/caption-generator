@@ -3,6 +3,8 @@
  * @description 处理 Hashtag 查询和推荐请求
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getRecommendedHashtags,

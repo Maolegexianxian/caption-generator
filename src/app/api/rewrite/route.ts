@@ -3,6 +3,8 @@
  * @description 处理 AI 文案改写请求
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { rewriteCaption, RewriteRequest } from '@/services/ai-service';
 import { PlatformId } from '@/types';

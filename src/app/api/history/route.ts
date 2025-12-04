@@ -3,6 +3,8 @@
  * @description 处理生成历史的查询和管理
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getGenerationHistory,

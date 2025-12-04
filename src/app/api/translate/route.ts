@@ -3,6 +3,8 @@
  * @description 处理 AI 文案翻译请求
  */
 
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { translateCaption, TranslateRequest } from '@/services/ai-service';
 

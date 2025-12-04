@@ -206,49 +206,43 @@ export function HeroGenerator() {
           {/* 2. 输入区域 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* 主题输入框 (占据 2/3) */}
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-base font-medium text-foreground/80 flex items-center gap-2">
+                <Sparkles className={cn("w-4 h-4", theme.iconColor)} />
+                Topic or Keywords
+              </label>
               <Input
                 type="text"
-                label="Topic or Keywords"
                 placeholder="e.g., Sunset at the beach, New coffee shop..."
                 value={topic}
                 onValueChange={setTopic}
                 variant="bordered"
-                labelPlacement="outside"
                 radius="md"
                 size="lg"
                 classNames={{
-                  base: "gap-2",
-                  label: "text-base font-medium text-foreground/80 pb-1",
-                  mainWrapper: "h-full",
                   inputWrapper: "h-14 border-default-200 hover:border-default-400 focus-within:border-foreground/50 bg-default-50/50 transition-colors",
-                  innerWrapper: "gap-3",
                   input: "text-base placeholder:text-default-400"
                 }}
-                startContent={<Sparkles className={cn("w-5 h-5", theme.iconColor)} />}
               />
             </div>
 
             {/* 情绪选择 (占据 1/3) */}
-            <div className="md:col-span-1">
+            <div className="md:col-span-1 space-y-2">
+              <label className="text-base font-medium text-foreground/80 flex items-center gap-2">
+                <Wand2 className={cn("w-4 h-4", theme.iconColor)} />
+                Tone / Mood
+              </label>
               <Select
-                label="Tone / Mood"
                 placeholder="Select a tone"
                 selectedKeys={mood ? [mood] : []}
                 onChange={(e) => setMood(e.target.value)}
                 variant="bordered"
-                labelPlacement="outside"
                 radius="md"
                 size="lg"
                 classNames={{
-                  base: "gap-2",
-                  label: "text-base font-medium text-foreground/80 pb-1",
-                  mainWrapper: "h-full",
                   trigger: "h-14 border-default-200 hover:border-default-400 focus-within:border-foreground/50 bg-default-50/50 transition-colors",
-                  value: "text-base",
-                  selectorIcon: "text-default-400"
+                  value: "text-base"
                 }}
-                startContent={<Wand2 className={cn("w-5 h-5", theme.iconColor)} />}
               >
                 {MOODS_CONFIG.map((m) => (
                   <SelectItem key={m.id} startContent={<span className="text-lg">{m.icon}</span>}>
@@ -273,26 +267,28 @@ export function HeroGenerator() {
             {showAdvanced && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-default-50/50 rounded-lg border border-default-200">
                 {/* 语言选择 */}
-                <Select
-                  label="Language"
-                  selectedKeys={[language]}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  variant="bordered"
-                  labelPlacement="outside"
-                  radius="md"
-                  size="sm"
-                  classNames={{
-                    label: "text-sm font-medium text-foreground/80",
-                    trigger: "h-10 border-default-200",
-                  }}
-                  startContent={<Globe className="w-4 h-4 text-default-400" />}
-                >
-                  {LANGUAGES_CONFIG.map((lang) => (
-                    <SelectItem key={lang.code}>
-                      {lang.name}
-                    </SelectItem>
-                  ))}
-                </Select>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-default-400" />
+                    Language
+                  </label>
+                  <Select
+                    selectedKeys={[language]}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    variant="bordered"
+                    radius="md"
+                    size="sm"
+                    classNames={{
+                      trigger: "h-10 border-default-200",
+                    }}
+                  >
+                    {LANGUAGES_CONFIG.map((lang) => (
+                      <SelectItem key={lang.code}>
+                        {lang.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                </div>
 
                 {/* Emoji 开关 */}
                 <div className="flex items-center justify-between">
