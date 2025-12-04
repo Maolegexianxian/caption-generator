@@ -1,11 +1,9 @@
 /**
  * Hashtag 服务
  * @description 提供 Hashtag 的查询、推荐和管理功能
+ * @note 当前版本使用静态配置数据，无需数据库
  */
 
-import { db } from '@/db';
-import { hashtags, categoryHashtags } from '@/db/schema';
-import { eq, desc, inArray, sql, like } from 'drizzle-orm';
 import { CATEGORY_HASHTAGS, GENERIC_HASHTAGS } from '@/config/constants';
 import { PlatformId } from '@/types';
 
@@ -24,76 +22,33 @@ export interface HashtagRecommendParams {
 }
 
 /**
- * 获取分类相关的 Hashtag
+ * 获取分类相关的 Hashtag（静态配置版本）
  * @param categoryId - 分类 ID
  * @param limit - 数量限制
  * @returns Hashtag 列表
  */
 export async function getHashtagsByCategory(categoryId: string, limit = 15): Promise<string[]> {
-  try {
-    // 首先从数据库获取
-    const dbResults = await db
-      .select({
-        tag: hashtags.tag,
-        usageCount: hashtags.usageCount,
-      })
-      .from(categoryHashtags)
-      .innerJoin(hashtags, eq(categoryHashtags.hashtagId, hashtags.id))
-      .where(eq(categoryHashtags.categoryId, categoryId))
-      .orderBy(desc(hashtags.usageCount))
-      .limit(limit);
-
-    if (dbResults.length > 0) {
-      return dbResults.map(r => r.tag);
-    }
-
-    // 如果数据库没有数据，使用配置文件中的数据
-    const configHashtags = CATEGORY_HASHTAGS[categoryId] || [];
-    return configHashtags.slice(0, limit);
-  } catch (error) {
-    console.error('Error getting category hashtags:', error);
-    // 降级到配置数据
-    return (CATEGORY_HASHTAGS[categoryId] || []).slice(0, limit);
-  }
+  // 直接从配置获取
+  const configHashtags = CATEGORY_HASHTAGS[categoryId] || [];
+  return configHashtags.slice(0, limit);
 }
 
 /**
- * 获取热门 Hashtag
+ * 获取热门 Hashtag（静态配置版本）
  * @param limit - 数量限制
  * @param platformId - 平台 ID（可选）
  * @returns Hashtag 列表
  */
 export async function getPopularHashtags(limit = 20, platformId?: PlatformId): Promise<string[]> {
-  try {
-    const results = await db
-      .select({
-        tag: hashtags.tag,
-      })
-      .from(hashtags)
-      .orderBy(desc(hashtags.usageCount))
-      .limit(limit);
-
-    if (results.length > 0) {
-      return results.map(r => r.tag);
-    }
-
-    // 降级到通用 Hashtag（根据平台选择）
-    const platformKey = platformId === PlatformId.X ? 'x' 
-      : platformId === PlatformId.TELEGRAM ? 'telegram' 
-      : 'instagram';
-    return GENERIC_HASHTAGS[platformKey].slice(0, limit);
-  } catch (error) {
-    console.error('Error getting popular hashtags:', error);
-    // 降级处理
-    const platformKey = platformId === PlatformId.X ? 'x' 
-      : platformId === PlatformId.TELEGRAM ? 'telegram' 
-      : 'instagram';
-    return GENERIC_HASHTAGS[platformKey].slice(0, limit);
-  }
+  // 根据平台选择通用 Hashtag
+  const platformKey = platformId === PlatformId.X ? 'x' 
+    : platformId === PlatformId.TELEGRAM ? 'telegram' 
+    : 'instagram';
+  return GENERIC_HASHTAGS[platformKey].slice(0, limit);
 }
 
 /**
- * 搜索 Hashtag
+ * 搜索 Hashtag（静态配置版本）
  * @param query - 搜索关键词
  * @param limit - 数量限制
  * @returns Hashtag 列表
@@ -103,21 +58,26 @@ export async function searchHashtags(query: string, limit = 10): Promise<string[
     return [];
   }
 
-  try {
-    const results = await db
-      .select({
-        tag: hashtags.tag,
-      })
-      .from(hashtags)
-      .where(like(hashtags.tag, `%${query.toLowerCase()}%`))
-      .orderBy(desc(hashtags.usageCount))
-      .limit(limit);
+  const normalizedQuery = query.toLowerCase();
+  const allHashtags: string[] = [];
+  
+  // 从所有分类收集 hashtags
+  Object.values(CATEGORY_HASHTAGS).forEach(tags => {
+    allHashtags.push(...tags);
+  });
+  
+  // 从通用 hashtags 收集
+  Object.values(GENERIC_HASHTAGS).forEach(tags => {
+    allHashtags.push(...tags);
+  });
+  
+  // 去重并搜索
+  const uniqueHashtags = [...new Set(allHashtags)];
+  const matchedHashtags = uniqueHashtags
+    .filter(tag => tag.toLowerCase().includes(normalizedQuery))
+    .slice(0, limit);
 
-    return results.map(r => r.tag);
-  } catch (error) {
-    console.error('Error searching hashtags:', error);
-    return [];
-  }
+  return matchedHashtags;
 }
 
 /**
@@ -170,67 +130,44 @@ export async function getRecommendedHashtags(params: HashtagRecommendParams): Pr
 }
 
 /**
- * 增加 Hashtag 使用次数
+ * 增加 Hashtag 使用次数（静态版本 - 无操作）
  * @param tags - Hashtag 列表
+ * @note 当前版本不追踪使用次数
  */
 export async function incrementHashtagUsage(tags: string[]): Promise<void> {
-  if (!tags || tags.length === 0) return;
-
-  try {
-    // 获取现有的 Hashtag
-    const normalizedTags = tags.map(t => t.toLowerCase().replace(/^#/, ''));
-    
-    const existingTags = await db
-      .select({ id: hashtags.id, tag: hashtags.tag })
-      .from(hashtags)
-      .where(inArray(hashtags.tag, normalizedTags));
-
-    // 更新使用次数
-    for (const tag of existingTags) {
-      await db
-        .update(hashtags)
-        .set({ usageCount: sql`${hashtags.usageCount} + 1` })
-        .where(eq(hashtags.id, tag.id));
-    }
-  } catch (error) {
-    console.error('Error incrementing hashtag usage:', error);
-  }
+  // 静态配置版本，无需追踪使用次数
+  // 后续接入数据库后可启用
+  void tags;
 }
 
 /**
- * 获取 Hashtag 统计信息
+ * 获取 Hashtag 统计信息（静态配置版本）
  * @returns 统计数据
  */
 export async function getHashtagStats(): Promise<{
   totalCount: number;
   topHashtags: Array<{ tag: string; usageCount: number }>;
 }> {
-  try {
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(hashtags);
+  // 从配置计算总数
+  const allHashtags: string[] = [];
+  
+  Object.values(CATEGORY_HASHTAGS).forEach(tags => {
+    allHashtags.push(...tags);
+  });
+  Object.values(GENERIC_HASHTAGS).forEach(tags => {
+    allHashtags.push(...tags);
+  });
+  
+  const uniqueHashtags = [...new Set(allHashtags)];
+  
+  // 返回前10个作为"热门"
+  const topHashtags = uniqueHashtags.slice(0, 10).map(tag => ({
+    tag,
+    usageCount: 0, // 静态版本没有使用统计
+  }));
 
-    const topTags = await db
-      .select({
-        tag: hashtags.tag,
-        usageCount: hashtags.usageCount,
-      })
-      .from(hashtags)
-      .orderBy(desc(hashtags.usageCount))
-      .limit(10);
-
-    return {
-      totalCount: countResult[0]?.count || 0,
-      topHashtags: topTags.map(t => ({
-        tag: t.tag,
-        usageCount: t.usageCount || 0,
-      })),
-    };
-  } catch (error) {
-    console.error('Error getting hashtag stats:', error);
-    return {
-      totalCount: 0,
-      topHashtags: [],
-    };
-  }
+  return {
+    totalCount: uniqueHashtags.length,
+    topHashtags,
+  };
 }

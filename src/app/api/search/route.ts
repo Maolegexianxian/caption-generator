@@ -1,19 +1,18 @@
 /**
  * 搜索 API 路由
  * @description 提供全站文案搜索功能，支持按平台、分类、情绪筛选
+ * @note 当前版本使用静态配置数据，无需数据库
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { captions, categories, moods } from '@/db/schema';
-import { eq, and, like, desc, sql, or, inArray } from 'drizzle-orm';
+import { CATEGORIES_CONFIG, MOODS_CONFIG } from '@/config/constants';
 import { ApiResponse, PlatformId } from '@/types';
 
 /**
  * 搜索结果类型
  */
 interface SearchResult {
-  /** 文案列表 */
+  /** 文案列表 - 当前版本不支持文案搜索 */
   captions: Array<{
     id: string;
     content: string;
@@ -46,9 +45,10 @@ interface SearchResult {
 
 /**
  * GET /api/search
- * @description 搜索文案、分类和情绪标签
+ * @description 搜索分类和情绪标签（静态配置版本）
  * @param request - Next.js 请求对象
  * @returns 搜索结果
+ * @note 当前版本不支持文案搜索，仅搜索分类和情绪
  */
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<SearchResult>>> {
   try {
@@ -56,20 +56,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     
     /** 搜索关键词 */
     const query = searchParams.get('q') || '';
-    /** 平台 ID */
-    const platformId = searchParams.get('platform') as PlatformId | null;
-    /** 分类 ID */
-    const categoryId = searchParams.get('category');
-    /** 情绪 ID 列表（逗号分隔） */
-    const moodIdsParam = searchParams.get('moods');
-    const moodIds = moodIdsParam ? moodIdsParam.split(',').filter(Boolean) : [];
-    /** 每页数量 */
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
-    /** 偏移量 */
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    // 如果没有搜索关键词且没有筛选条件，返回空结果
-    if (!query && !platformId && !categoryId && moodIds.length === 0) {
+    // 如果没有搜索关键词，返回空结果
+    if (!query) {
       return NextResponse.json({
         success: true,
         data: {
@@ -82,123 +71,43 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       });
     }
 
-    // 构建文案查询条件
-    const captionConditions = [];
-    
-    // 关键词搜索（搜索内容）
-    if (query) {
-      captionConditions.push(like(captions.content, `%${query}%`));
-    }
-    
-    // 平台筛选
-    if (platformId && Object.values(PlatformId).includes(platformId)) {
-      captionConditions.push(eq(captions.platformId, platformId));
-    }
-    
-    // 分类筛选
-    if (categoryId) {
-      captionConditions.push(eq(captions.categoryId, categoryId));
-    }
-    
-    // 情绪筛选
-    if (moodIds.length > 0) {
-      captionConditions.push(inArray(captions.moodId, moodIds));
-    }
-    
-    // 只查询启用的文案
-    captionConditions.push(eq(captions.isActive, true));
+    const normalizedQuery = query.toLowerCase();
 
-    // 查询文案
-    const captionResults = await db
-      .select({
-        id: captions.id,
-        content: captions.content,
-        formattedContent: captions.formattedContent,
-        platformId: captions.platformId,
-        categoryId: captions.categoryId,
-        moodId: captions.moodId,
-        characterCount: captions.characterCount,
-        copyCount: captions.copyCount,
-      })
-      .from(captions)
-      .where(and(...captionConditions))
-      .orderBy(desc(captions.copyCount))
-      .limit(limit)
-      .offset(offset);
+    // 搜索匹配的分类（从静态配置）
+    const categoryResults = CATEGORIES_CONFIG
+      .filter(cat => 
+        cat.name.toLowerCase().includes(normalizedQuery) ||
+        cat.displayName.toLowerCase().includes(normalizedQuery)
+      )
+      .slice(0, 10)
+      .map(cat => ({
+        id: cat.id,
+        displayName: cat.displayName,
+        slug: cat.slug,
+        icon: cat.icon,
+      }));
 
-    // 获取总数
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(captions)
-      .where(and(...captionConditions));
-    
-    const total = countResult[0]?.count || 0;
-
-    // 搜索匹配的分类（如果有关键词）
-    let categoryResults: Array<{
-      id: string;
-      displayName: string;
-      slug: string;
-      icon: string | null;
-    }> = [];
-    
-    if (query) {
-      categoryResults = await db
-        .select({
-          id: categories.id,
-          displayName: categories.displayName,
-          slug: categories.slug,
-          icon: categories.icon,
-        })
-        .from(categories)
-        .where(
-          and(
-            eq(categories.isActive, true),
-            or(
-              like(categories.name, `%${query}%`),
-              like(categories.displayName, `%${query}%`)
-            )
-          )
-        )
-        .limit(10);
-    }
-
-    // 搜索匹配的情绪标签（如果有关键词）
-    let moodResults: Array<{
-      id: string;
-      displayName: string;
-      slug: string;
-      icon: string | null;
-    }> = [];
-    
-    if (query) {
-      moodResults = await db
-        .select({
-          id: moods.id,
-          displayName: moods.displayName,
-          slug: moods.slug,
-          icon: moods.icon,
-        })
-        .from(moods)
-        .where(
-          and(
-            eq(moods.isActive, true),
-            or(
-              like(moods.name, `%${query}%`),
-              like(moods.displayName, `%${query}%`)
-            )
-          )
-        )
-        .limit(10);
-    }
+    // 搜索匹配的情绪标签（从静态配置）
+    const moodResults = MOODS_CONFIG
+      .filter(mood => 
+        mood.name.toLowerCase().includes(normalizedQuery) ||
+        mood.displayName.toLowerCase().includes(normalizedQuery)
+      )
+      .slice(0, 10)
+      .map(mood => ({
+        id: mood.id,
+        displayName: mood.displayName,
+        slug: mood.slug,
+        icon: mood.icon,
+      }));
 
     return NextResponse.json({
       success: true,
       data: {
-        captions: captionResults,
+        captions: [], // 当前版本不支持文案搜索
         categories: categoryResults,
         moods: moodResults,
-        total,
+        total: categoryResults.length + moodResults.length,
         query,
       },
     });

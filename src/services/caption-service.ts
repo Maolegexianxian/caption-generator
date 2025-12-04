@@ -1,13 +1,34 @@
 /**
  * 文案服务层
- * @description 提供文案的数据库操作，包括查询、创建、更新等
+ * @description 提供文案的数据操作接口
+ * @note 当前版本暂时禁用数据库，返回空结果
+ * @todo 后续可接入 Cloudflare D1 或其他数据库
  */
 
-import { db } from '@/db';
-import { captions, hashtags, categoryHashtags } from '@/db/schema';
-import { eq, desc, asc, and, inArray, sql, like } from 'drizzle-orm';
 import { PlatformId, LengthType } from '@/types';
-import { generateUniqueId } from '@/lib/utils';
+import { CATEGORY_HASHTAGS } from '@/config/constants';
+
+/**
+ * 文案数据类型（静态版本）
+ */
+export interface CaptionData {
+  id: string;
+  content: string;
+  formattedContent: string | null;
+  platformId: string | null;
+  categoryId: string | null;
+  moodId: string | null;
+  language: string;
+  lengthType: string;
+  characterCount: number | null;
+  viewCount: number;
+  copyCount: number;
+  qualityScore: number;
+  isFeatured: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 /**
  * 文案查询参数
@@ -36,7 +57,7 @@ export interface CaptionQueryParams {
  */
 export interface CaptionQueryResult {
   /** 文案列表 */
-  captions: typeof captions.$inferSelect[];
+  captions: CaptionData[];
   /** 总数 */
   total: number;
   /** 是否有更多 */
@@ -68,242 +89,96 @@ export interface CreateCaptionParams {
 }
 
 /**
- * 根据条件查询文案
+ * 根据条件查询文案（静态版本 - 返回空结果）
  * @param params - 查询参数
  * @returns 文案列表和分页信息
+ * @note 当前版本不支持文案查询
  */
 export async function queryCaptions(params: CaptionQueryParams): Promise<CaptionQueryResult> {
-  const {
-    platformId,
-    categoryId,
-    moodIds,
-    lengthType,
-    searchTerm,
-    sortBy = 'newest',
-    limit = 20,
-    offset = 0,
-  } = params;
-
-  try {
-    // 构建查询条件
-    const conditions = [];
-    
-    if (platformId) {
-      conditions.push(eq(captions.platformId, platformId));
-    }
-    
-    if (categoryId) {
-      conditions.push(eq(captions.categoryId, categoryId));
-    }
-    
-    if (moodIds && moodIds.length > 0) {
-      conditions.push(inArray(captions.moodId, moodIds));
-    }
-    
-    if (lengthType) {
-      conditions.push(eq(captions.lengthType, lengthType));
-    }
-    
-    if (searchTerm) {
-      conditions.push(like(captions.content, `%${searchTerm}%`));
-    }
-
-    // 构建排序
-    let orderBy;
-    switch (sortBy) {
-      case 'popular':
-        orderBy = desc(captions.copyCount);
-        break;
-      case 'shortest':
-        orderBy = asc(captions.characterCount);
-        break;
-      case 'longest':
-        orderBy = desc(captions.characterCount);
-        break;
-      case 'newest':
-      default:
-        orderBy = desc(captions.createdAt);
-        break;
-    }
-
-    // 执行查询
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-    
-    const results = await db
-      .select()
-      .from(captions)
-      .where(whereClause)
-      .orderBy(orderBy)
-      .limit(limit)
-      .offset(offset);
-
-    // 获取总数
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(captions)
-      .where(whereClause);
-    
-    const total = countResult[0]?.count || 0;
-
-    return {
-      captions: results,
-      total,
-      hasMore: offset + results.length < total,
-    };
-  } catch (error) {
-    console.error('Error querying captions:', error);
-    throw new Error('Failed to query captions');
-  }
+  // 静态版本，返回空结果
+  void params;
+  return {
+    captions: [],
+    total: 0,
+    hasMore: false,
+  };
 }
 
 /**
- * 根据 ID 获取单条文案
+ * 根据 ID 获取单条文案（静态版本）
  * @param id - 文案 ID
- * @returns 文案对象或 null
+ * @returns null
  */
-export async function getCaptionById(id: string) {
-  try {
-    const result = await db
-      .select()
-      .from(captions)
-      .where(eq(captions.id, id))
-      .limit(1);
-    
-    return result[0] || null;
-  } catch (error) {
-    console.error('Error getting caption:', error);
-    return null;
-  }
+export async function getCaptionById(id: string): Promise<CaptionData | null> {
+  void id;
+  return null;
 }
 
 /**
- * 创建新文案
+ * 创建新文案（静态版本 - 无操作）
  * @param params - 创建参数
- * @returns 创建的文案对象
+ * @returns 模拟的文案对象
  */
-export async function createCaption(params: CreateCaptionParams) {
-  const {
-    content,
-    formattedContent,
-    platformId,
-    categoryId,
-    moodId,
-    language = 'en',
-    lengthType,
-  } = params;
-
-  try {
-    const id = generateUniqueId();
-    const now = new Date().toISOString();
-    
-    // 计算长度类型（如果未提供）
-    const calculatedLengthType = lengthType || calculateLengthType(content.length);
-    
-    const newCaption = {
-      id,
-      content,
-      formattedContent: formattedContent || content,
-      platformId,
-      categoryId: categoryId || null,
-      moodId: moodId || null,
-      language,
-      lengthType: calculatedLengthType,
-      characterCount: content.length,
-      copyCount: 0,
-      viewCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    await db.insert(captions).values(newCaption);
-    
-    return newCaption;
-  } catch (error) {
-    console.error('Error creating caption:', error);
-    throw new Error('Failed to create caption');
-  }
+export async function createCaption(params: CreateCaptionParams): Promise<CaptionData> {
+  const now = new Date().toISOString();
+  const calculatedLengthType = params.lengthType || calculateLengthType(params.content.length);
+  
+  // 返回模拟数据，实际不存储
+  return {
+    id: `temp-${Date.now()}`,
+    content: params.content,
+    formattedContent: params.formattedContent || params.content,
+    platformId: params.platformId,
+    categoryId: params.categoryId || null,
+    moodId: params.moodId || null,
+    language: params.language || 'en',
+    lengthType: calculatedLengthType,
+    characterCount: params.content.length,
+    copyCount: 0,
+    viewCount: 0,
+    qualityScore: 0,
+    isFeatured: false,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 /**
- * 更新文案复制次数
+ * 更新文案复制次数（静态版本 - 无操作）
  * @param id - 文案 ID
  */
-export async function incrementCaptionCopyCount(id: string) {
-  try {
-    await db
-      .update(captions)
-      .set({ 
-        copyCount: sql`${captions.copyCount} + 1`,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(captions.id, id));
-  } catch (error) {
-    console.error('Error incrementing copy count:', error);
-  }
+export async function incrementCaptionCopyCount(id: string): Promise<void> {
+  void id;
 }
 
 /**
- * 更新文案查看次数
+ * 更新文案查看次数（静态版本 - 无操作）
  * @param id - 文案 ID
  */
-export async function incrementCaptionViewCount(id: string) {
-  try {
-    await db
-      .update(captions)
-      .set({ 
-        viewCount: sql`${captions.viewCount} + 1`,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(captions.id, id));
-  } catch (error) {
-    console.error('Error incrementing view count:', error);
-  }
+export async function incrementCaptionViewCount(id: string): Promise<void> {
+  void id;
 }
 
 /**
- * 获取分类下的 Hashtag 列表
+ * 获取分类下的 Hashtag 列表（静态配置版本）
  * @param categoryId - 分类 ID
  * @returns Hashtag 列表
  */
 export async function getHashtagsByCategory(categoryId: string): Promise<string[]> {
-  try {
-    const result = await db
-      .select({
-        tag: hashtags.tag,
-      })
-      .from(categoryHashtags)
-      .innerJoin(hashtags, eq(categoryHashtags.hashtagId, hashtags.id))
-      .where(eq(categoryHashtags.categoryId, categoryId));
-    
-    return result.map(r => r.tag);
-  } catch (error) {
-    console.error('Error getting hashtags:', error);
-    return [];
-  }
+  return CATEGORY_HASHTAGS[categoryId] || [];
 }
 
 /**
- * 获取热门文案
+ * 获取热门文案（静态版本 - 返回空）
  * @param platformId - 平台 ID
  * @param limit - 数量限制
- * @returns 热门文案列表
+ * @returns 空列表
  */
-export async function getPopularCaptions(platformId?: PlatformId, limit = 10) {
-  try {
-    const conditions = platformId ? eq(captions.platformId, platformId) : undefined;
-    
-    const result = await db
-      .select()
-      .from(captions)
-      .where(conditions)
-      .orderBy(desc(captions.copyCount))
-      .limit(limit);
-    
-    return result;
-  } catch (error) {
-    console.error('Error getting popular captions:', error);
-    return [];
-  }
+export async function getPopularCaptions(platformId?: PlatformId, limit = 10): Promise<CaptionData[]> {
+  void platformId;
+  void limit;
+  return [];
 }
 
 /**
@@ -322,117 +197,50 @@ function calculateLengthType(charCount: number): LengthType {
 }
 
 /**
- * 批量创建文案
+ * 批量创建文案（静态版本 - 无操作）
  * @param captionsList - 文案列表
- * @returns 创建的文案数量
+ * @returns 0
  */
 export async function batchCreateCaptions(captionsList: CreateCaptionParams[]): Promise<number> {
-  try {
-    const now = new Date().toISOString();
-    const captionsToInsert = captionsList.map(params => ({
-      id: generateUniqueId(),
-      content: params.content,
-      formattedContent: params.formattedContent || params.content,
-      platformId: params.platformId,
-      categoryId: params.categoryId || null,
-      moodId: params.moodId || null,
-      language: params.language || 'en',
-      lengthType: params.lengthType || calculateLengthType(params.content.length),
-      characterCount: params.content.length,
-      copyCount: 0,
-      viewCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    }));
-
-    await db.insert(captions).values(captionsToInsert);
-    
-    return captionsToInsert.length;
-  } catch (error) {
-    console.error('Error batch creating captions:', error);
-    throw new Error('Failed to batch create captions');
-  }
+  void captionsList;
+  return 0;
 }
 
 /**
- * 获取分类页面文案（用于 SEO 落地页）
+ * 获取分类页面文案（静态版本）
  * @param platformId - 平台 ID
  * @param categoryId - 分类 ID
  * @param limit - 数量限制
- * @returns 文案列表及相关标签
+ * @returns 空文案列表和配置的标签
  */
 export async function getCategoryPageCaptions(
   platformId: PlatformId,
   categoryId: string,
   limit = 12
 ): Promise<{
-  captions: typeof captions.$inferSelect[];
+  captions: CaptionData[];
   hashtags: string[];
 }> {
-  try {
-    // 获取分类文案
-    const captionResults = await db
-      .select()
-      .from(captions)
-      .where(
-        and(
-          eq(captions.platformId, platformId),
-          eq(captions.categoryId, categoryId),
-          eq(captions.isActive, true)
-        )
-      )
-      .orderBy(desc(captions.isFeatured), desc(captions.copyCount))
-      .limit(limit);
-
-    // 获取分类相关 Hashtag
-    const hashtagResults = await db
-      .select({ tag: hashtags.tag })
-      .from(categoryHashtags)
-      .innerJoin(hashtags, eq(categoryHashtags.hashtagId, hashtags.id))
-      .where(eq(categoryHashtags.categoryId, categoryId))
-      .orderBy(desc(hashtags.usageCount))
-      .limit(10);
-
-    return {
-      captions: captionResults,
-      hashtags: hashtagResults.map(h => h.tag),
-    };
-  } catch (error) {
-    console.error('Error getting category page captions:', error);
-    return {
-      captions: [],
-      hashtags: [],
-    };
-  }
+  void platformId;
+  void limit;
+  
+  return {
+    captions: [],
+    hashtags: CATEGORY_HASHTAGS[categoryId] || [],
+  };
 }
 
 /**
- * 获取精选文案（用于首页展示）
+ * 获取精选文案（静态版本 - 返回空）
  * @param platformId - 平台 ID（可选）
  * @param limit - 数量限制
- * @returns 精选文案列表
+ * @returns 空列表
  */
 export async function getFeaturedCaptions(
   platformId?: PlatformId,
   limit = 8
-): Promise<typeof captions.$inferSelect[]> {
-  try {
-    const conditions = [eq(captions.isFeatured, true), eq(captions.isActive, true)];
-    
-    if (platformId) {
-      conditions.push(eq(captions.platformId, platformId));
-    }
-
-    const results = await db
-      .select()
-      .from(captions)
-      .where(and(...conditions))
-      .orderBy(desc(captions.copyCount))
-      .limit(limit);
-
-    return results;
-  } catch (error) {
-    console.error('Error getting featured captions:', error);
-    return [];
-  }
+): Promise<CaptionData[]> {
+  void platformId;
+  void limit;
+  return [];
 }

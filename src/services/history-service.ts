@@ -1,13 +1,33 @@
 /**
  * 生成历史记录服务
  * @description 管理 AI 文案生成历史记录
+ * @note 当前版本暂时禁用数据库，使用内存存储
+ * @todo 后续可接入 Cloudflare D1 或其他数据库
  */
 
-import { db } from '@/db';
-import { generationHistory } from '@/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
 import { PlatformId, GeneratedCaption } from '@/types';
 import { generateUniqueId } from '@/lib/utils';
+
+/**
+ * 内存存储的历史记录（临时方案）
+ * @description 服务重启后会清空，仅用于当前会话
+ */
+const memoryHistoryStore: Map<string, HistoryRecord> = new Map();
+
+/**
+ * 历史记录类型
+ */
+interface HistoryRecord {
+  id: string;
+  sessionId: string | null;
+  platformId: string;
+  categoryId: string | null;
+  moodId: string | null;
+  keywords: string | null;
+  generatedContent: string;
+  userIp: string | null;
+  createdAt: string;
+}
 
 /**
  * 创建历史记录参数
@@ -44,11 +64,11 @@ export interface HistoryQueryParams {
 }
 
 /**
- * 保存生成历史记录
+ * 保存生成历史记录（内存存储版本）
  * @param params - 历史记录参数
  * @returns 创建的历史记录
  */
-export async function saveGenerationHistory(params: CreateHistoryParams) {
+export async function saveGenerationHistory(params: CreateHistoryParams): Promise<HistoryRecord> {
   const {
     platformId,
     categoryId,
@@ -59,33 +79,29 @@ export async function saveGenerationHistory(params: CreateHistoryParams) {
     userIp,
   } = params;
 
-  try {
-    const id = generateUniqueId();
-    const now = new Date().toISOString();
-    
-    const historyRecord = {
-      id,
-      sessionId: sessionId || null,
-      platformId,
-      categoryId: categoryId || null,
-      moodId: moodId || null,
-      keywords: keywords || null,
-      generatedContent: JSON.stringify(generatedCaptions),
-      userIp: userIp || null,
-      createdAt: now,
-    };
+  const id = generateUniqueId();
+  const now = new Date().toISOString();
+  
+  const historyRecord: HistoryRecord = {
+    id,
+    sessionId: sessionId || null,
+    platformId,
+    categoryId: categoryId || null,
+    moodId: moodId || null,
+    keywords: keywords || null,
+    generatedContent: JSON.stringify(generatedCaptions),
+    userIp: userIp || null,
+    createdAt: now,
+  };
 
-    await db.insert(generationHistory).values(historyRecord);
-    
-    return historyRecord;
-  } catch (error) {
-    console.error('Error saving generation history:', error);
-    throw new Error('Failed to save generation history');
-  }
+  // 存储到内存
+  memoryHistoryStore.set(id, historyRecord);
+  
+  return historyRecord;
 }
 
 /**
- * 获取会话的生成历史
+ * 获取会话的生成历史（内存存储版本）
  * @param params - 查询参数
  * @returns 历史记录列表
  */
@@ -97,156 +113,123 @@ export async function getGenerationHistory(params: HistoryQueryParams) {
     offset = 0,
   } = params;
 
-  try {
-    // 构建查询条件
-    const conditions = [];
-    
-    if (sessionId) {
-      conditions.push(eq(generationHistory.sessionId, sessionId));
-    }
-    
-    if (platformId) {
-      conditions.push(eq(generationHistory.platformId, platformId));
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    const results = await db
-      .select()
-      .from(generationHistory)
-      .where(whereClause)
-      .orderBy(desc(generationHistory.createdAt))
-      .limit(limit)
-      .offset(offset);
-
-    // 解析 JSON 字段
-    return results.map(record => ({
-      ...record,
-      generatedCaptions: record.generatedContent ? JSON.parse(record.generatedContent) : [],
-    }));
-  } catch (error) {
-    console.error('Error getting generation history:', error);
-    return [];
+  // 从内存获取所有记录并过滤
+  let results = Array.from(memoryHistoryStore.values());
+  
+  if (sessionId) {
+    results = results.filter(r => r.sessionId === sessionId);
   }
+  
+  if (platformId) {
+    results = results.filter(r => r.platformId === platformId);
+  }
+
+  // 按创建时间倒序排序
+  results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // 分页
+  const paginatedResults = results.slice(offset, offset + limit);
+
+  // 解析 JSON 字段
+  return paginatedResults.map(record => ({
+    ...record,
+    generatedCaptions: record.generatedContent ? JSON.parse(record.generatedContent) : [],
+  }));
 }
 
 /**
- * 根据 ID 获取历史记录详情
+ * 根据 ID 获取历史记录详情（内存存储版本）
  * @param id - 历史记录 ID
  * @returns 历史记录或 null
  */
 export async function getHistoryById(id: string) {
-  try {
-    const result = await db
-      .select()
-      .from(generationHistory)
-      .where(eq(generationHistory.id, id))
-      .limit(1);
-    
-    if (result.length === 0) {
-      return null;
-    }
-
-    const record = result[0];
-    return {
-      ...record,
-      generatedCaptions: record.generatedContent ? JSON.parse(record.generatedContent) : [],
-    };
-  } catch (error) {
-    console.error('Error getting history by ID:', error);
+  const record = memoryHistoryStore.get(id);
+  
+  if (!record) {
     return null;
   }
+
+  return {
+    ...record,
+    generatedCaptions: record.generatedContent ? JSON.parse(record.generatedContent) : [],
+  };
 }
 
 /**
- * 删除历史记录
+ * 删除历史记录（内存存储版本）
  * @param id - 历史记录 ID
  * @param sessionId - 会话 ID（用于验证权限）
  * @returns 是否成功删除
  */
-export async function deleteHistory(id: string, sessionId?: string) {
-  try {
-    const conditions = [eq(generationHistory.id, id)];
-    
-    if (sessionId) {
-      conditions.push(eq(generationHistory.sessionId, sessionId));
-    }
-
-    await db
-      .delete(generationHistory)
-      .where(and(...conditions));
-    
-    return true;
-  } catch (error) {
-    console.error('Error deleting history:', error);
+export async function deleteHistory(id: string, sessionId?: string): Promise<boolean> {
+  const record = memoryHistoryStore.get(id);
+  
+  if (!record) {
     return false;
   }
+  
+  // 验证会话权限
+  if (sessionId && record.sessionId !== sessionId) {
+    return false;
+  }
+  
+  memoryHistoryStore.delete(id);
+  return true;
 }
 
 /**
- * 清空会话的所有历史记录
+ * 清空会话的所有历史记录（内存存储版本）
  * @param sessionId - 会话 ID
  * @returns 是否成功清空
  */
-export async function clearSessionHistory(sessionId: string) {
-  try {
-    await db
-      .delete(generationHistory)
-      .where(eq(generationHistory.sessionId, sessionId));
-    
-    return true;
-  } catch (error) {
-    console.error('Error clearing session history:', error);
-    return false;
-  }
+export async function clearSessionHistory(sessionId: string): Promise<boolean> {
+  const idsToDelete: string[] = [];
+  
+  memoryHistoryStore.forEach((record, id) => {
+    if (record.sessionId === sessionId) {
+      idsToDelete.push(id);
+    }
+  });
+  
+  idsToDelete.forEach(id => memoryHistoryStore.delete(id));
+  return true;
 }
 
 /**
- * 获取会话生成统计
+ * 获取会话生成统计（内存存储版本）
  * @param sessionId - 会话 ID
  * @returns 统计信息
  */
 export async function getSessionGenerationStats(sessionId: string) {
-  try {
-    const results = await db
-      .select()
-      .from(generationHistory)
-      .where(eq(generationHistory.sessionId, sessionId));
+  const results = Array.from(memoryHistoryStore.values())
+    .filter(r => r.sessionId === sessionId);
 
-    const totalGenerations = results.length;
-    
-    // 计算生成的文案总数
-    let totalCaptions = 0;
-    results.forEach(r => {
-      if (r.generatedContent) {
-        try {
-          const captions = JSON.parse(r.generatedContent);
-          totalCaptions += Array.isArray(captions) ? captions.length : 0;
-        } catch {
-          // 解析失败忽略
-        }
+  const totalGenerations = results.length;
+  
+  // 计算生成的文案总数
+  let totalCaptions = 0;
+  results.forEach(r => {
+    if (r.generatedContent) {
+      try {
+        const captions = JSON.parse(r.generatedContent);
+        totalCaptions += Array.isArray(captions) ? captions.length : 0;
+      } catch {
+        // 解析失败忽略
       }
-    });
-    
-    // 按平台统计
-    const platformStats = results.reduce((acc, r) => {
-      if (r.platformId) {
-        acc[r.platformId] = (acc[r.platformId] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    }
+  });
+  
+  // 按平台统计
+  const platformStats = results.reduce((acc, r) => {
+    if (r.platformId) {
+      acc[r.platformId] = (acc[r.platformId] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
-    return {
-      totalGenerations,
-      totalCaptions,
-      platformStats,
-    };
-  } catch (error) {
-    console.error('Error getting session stats:', error);
-    return {
-      totalGenerations: 0,
-      totalCaptions: 0,
-      platformStats: {},
-    };
-  }
+  return {
+    totalGenerations,
+    totalCaptions,
+    platformStats,
+  };
 }
